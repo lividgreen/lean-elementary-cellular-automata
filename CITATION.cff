@@ -1,0 +1,39 @@
+cff-version: 1.2.0
+message: >-
+  If you use this library, please cite this repository as below, and cite the
+  original authors of each classical result it builds on, named in the README
+  of lean-classical-upstream.
+title: >-
+  lean-elementary-cellular-automata: the radius-one rule space — growth,
+  columns, rays and robustness of the elementary cellular automata,
+  machine-checked in Lean 4
+type: software
+authors:
+  - family-names: Palamarchuk
+    given-names: Mykola
+    email: lividgreen@gmail.com
+    orcid: https://orcid.org/0009-0007-2106-5777
+    affiliation: Independent researcher
+repository-code: https://github.com/lividgreen/lean-elementary-cellular-automata
+url: https://lividgreen.github.io/lean-elementary-cellular-automata/
+abstract: >-
+  A Lean 4 + Mathlib library on the 256 elementary cellular automata read as
+  hosts nobody built to carry anything: the growing world, its merge quotient
+  and its memory width, and the growing width decided at every quiescent table
+  — zero at every stage or unbounded, unbounded at exactly 54 of the 128 — over
+  the Wolfram numeral; the columns, windows and rays of a table that settle;
+  rule 90's rays from a single cell at every rational speed; robustness to two
+  cells at every scale over a class of tables; and a bracket on which tables
+  replicate a pattern. No sorry, no native_decide, standard axioms only, with
+  each capstone's axiom footprint asserted by a build-enforced guard.
+license: Apache-2.0
+keywords:
+  - Lean 4
+  - Mathlib
+  - formal verification
+  - cellular automata
+  - elementary cellular automata
+  - rule 90
+  - symbolic dynamics
+# The concept DOI is added after the first release, as in the companion
+# packages: only the concept DOI, never a per-version one (decision 2026-07-28).
