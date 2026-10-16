@@ -1,0 +1,688 @@
+module
+
+public import Batteries.Tactic.OpenPrivate
+public import ECA.EndpointClasses
+public import ErgodicTheory.DrivenColumns
+public import ErgodicTheory.LocalRuleColumns
+import all ECA.EndpointClasses
+import all ECA.PermutiveWidth
+
+/-!
+# The observed column: a non-periodic cell observation forces unbounded diameter
+([RuleSpace] §2 Definition 2.3, §3 Proposition 3.1 and §4 Proposition 4.4)
+
+A radius-one local rule acts on the finitely-supported configurations of the line. An observer who
+reads one cell `i` along the orbit of a seed `s₀` sees the column `t ↦ (U^t s₀) i`
+(`observedColumn`). Eventual periodicity is the hinge between a finite recurrent
+core and a growing orbit; this file proves the corresponding fact for the local rules, with the
+support DIAMETER as the size ([RuleSpace] §2 Definition 2.3's size function, one instance of it):
+
+**at a local rule whose diameter never grows, every observed column is eventually periodic.**
+
+The argument is a recurrence with drift. A rule commutes with translation, and along an orbit whose
+diameter never exceeds `D` the state read up to translation lives in the finite set of
+configurations supported on `D` cells, so two steps of the orbit have the same pattern: the later
+one is the earlier one translated by some `d`. Translation commutes with the rule, so the orbit
+from the earlier step on repeats with period `P` (the time gap) up to a drift of `d` cells per
+period. At `d = 0` the column is periodic with period `P`; at `d ≠ 0` the finitely many pattern
+phases drift off the observed cell for good, and the column is eventually constant `0`.
+
+The zero class of [RuleSpace] §3 Proposition 3.1 (`LocalRule.ZeroByEndpoints`) is a family of
+rules at which the diameter never grows, so its observed columns are all eventually periodic. The
+contrapositive is the form to cite: a cell observation that is not eventually periodic forces the
+diameter to grow along the orbit, so the observer's unending repairs are paid for by the system's
+growth.
+
+## Main results
+
+* `observedColumn` — the column read at cell `i` along the orbit of `s₀` under `U`.
+* `eventuallyPeriodic_observedColumn_of_diam_le` — at a quiescent local rule whose diameter never
+  grows, every observed column is eventually periodic.
+* `LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn` — the corollary at every rule of the
+  zero class.
+* `exists_diam_lt_iterate_of_not_eventuallyPeriodic` — the contrapositive along the orbit of the
+  seed: a non-periodic observed column forces a growth step of the diameter at some step of the
+  orbit; `exists_diam_lt_of_not_eventuallyPeriodic` is its form over all states.
+* `LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn_nonvacuous` — both hypotheses of the
+  corollary are met at once, at the shift `f170` (each cell reads its right neighbour), with
+  `observedColumn_f170_single` its column from the single seed.
+* `observedColumn_f90_single` / `observedColumn_f90_eventually_periodic_witness` — **the converse
+  fails** ([RuleSpace] §4 Remark 4.1): at `f90` (`LocalRule.GrowsByEndpoints`, whose
+  diameter is unbounded rather than never growing), the single seed's column at the center is
+  nonetheless `1` then `0` forever, by a symmetry the seed keeps under `i ↦ -i` through every step
+  (`finRule_f90_single_neg`) — eventual periodicity does not force the diameter back down.
+* `diam_lt_finRule_f30_single` — the diameter hypothesis is load-bearing: at rule 30 the single
+  seed's diameter goes from `1` to `3`, so the hypothesis of the first theorem fails there.
+* `observedRationalRay` — the ray of rational speed `p / q` from cell `e`: the value at
+  `e + ⌊p t / q⌋` at step `t`; `observedRationalRay_zero` is the observed column at speed `0`.
+  The rational ray is [RuleSpace] §4 Proposition 4.4, the column staying Remark 4.1's.
+* `eventuallyPeriodic_observedRationalRay_of_diam_le` — at a quiescent local rule whose diameter
+  never grows, every rational ray from every seed is eventually periodic: sampled every `q P`
+  steps of the drift's period `P`, the ray either reads one cell of the repeating pattern for ever
+  or leaves it for good. `LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedRationalRay` is the
+  corollary at the zero class, and `eventuallyPeriodic_observedRationalRay_of_diam_le_nonvacuous`
+  meets the three hypotheses at the shift `f170`.
+
+## Scope
+
+The theorems are about the observed column, and the rational ray, of the RULE
+`LocalRule.finRule f hq` on configurations of finite support, at one seed and one cell or one ray.
+Nothing here classifies the rules whose diameter grows, and nothing is claimed about the column or
+any ray at any such rule, rule 30's included: the guard
+`diam_lt_finRule_f30_single` shows only that the hypothesis fails there. The diameter is one
+choice of "size"; the support count, another, is not used.
+-/
+
+open private translate_zero translate_apply translate_support diam_eq'
+  from ECA.EndpointClasses
+open private card_regionStates from ECA.PermutiveWidth
+
+@[expose] public section
+
+namespace ECA
+
+open FiniteConfiguration LocalRule
+
+-- Shorthand for `FiniteConfiguration.translate`, which Mathlib's root-level `translate` can
+-- make ambiguous.
+local notation "τ" => FiniteConfiguration.translate
+
+/-! ## The observed column -/
+
+/-- **The observed column**: the value an observer reads at cell `i` at time `t` along the orbit
+of `s₀` under `U`. -/
+def observedColumn (U : FiniteConfiguration → FiniteConfiguration) (s₀ : FiniteConfiguration) (i :
+  ℤ) : ℕ → ZMod 2 :=
+  fun t => (U^[t] s₀) i
+
+/-- **A local rule is the local rule on the underlying function**: the coercion of the `t`-th
+iterate of `LocalRule.finRule f hq` is the `t`-th iterate of `LocalRuleColumns.step f` on the
+coerced configuration. -/
+theorem coe_finRule_iterate (f : LocalRule) (hq : f 0 0 0 = 0)
+    (t : ℕ) (s : FiniteConfiguration) :
+    ⇑((finRule f hq)^[t] s) = (LocalRuleColumns.step f)^[t] ⇑s := by
+  induction t with
+  | zero => rfl
+  | succ t ih =>
+      rw [Function.iterate_succ_apply', Function.iterate_succ_apply', ← ih]
+      funext i
+      exact finRule_apply f hq _ i
+
+/-- **The observed column is the local rule's column**:
+`observedColumn (LocalRule.finRule f hq) s₀ i` is `LocalRuleColumns.column f ⇑s₀ i`. -/
+theorem observedColumn_finRule_eq_column (f : LocalRule)
+    (hq : f 0 0 0 = 0) (s₀ : FiniteConfiguration) (i : ℤ) :
+    observedColumn (finRule f hq) s₀ i = LocalRuleColumns.column f ⇑s₀ i := by
+  funext t
+  simp only [observedColumn, LocalRuleColumns.column, ← coe_finRule_iterate f hq t s₀]
+
+/-! ## Translation: the cell rule, composition, and the rule's equivariance -/
+
+private theorem FiniteConfiguration.translate_apply_sub (i x : ℤ) (s : FiniteConfiguration) : τ i s
+  x = s (x - i) := by
+  have h := translate_apply i (x - i) s
+  rwa [sub_add_cancel] at h
+
+private theorem FiniteConfiguration.translate_translate (a b : ℤ) (s : FiniteConfiguration) :
+    τ a (τ b s) = τ (a + b) s := by
+  ext x
+  rw [translate_apply_sub, translate_apply_sub, translate_apply_sub, sub_sub]
+
+private theorem LocalRule.finRule_translate (f : LocalRule) (hq : f 0 0 0 = 0)
+    (k : ℤ) (s : FiniteConfiguration) :
+    finRule f hq (τ k s) = τ k (finRule f hq s) := by
+  ext x
+  simp only [finRule_apply, translate_apply_sub]
+  rw [show x - 1 - k = x - k - 1 by ring, show x + 1 - k = x - k + 1 by ring]
+
+private theorem iterate_translate {U : FiniteConfiguration → FiniteConfiguration}
+    (hE : ∀ (d : ℤ) (s : FiniteConfiguration), U (τ d s) = τ d (U s))
+    (d : ℤ) (s : FiniteConfiguration) :
+    ∀ k : ℕ, U^[k] (τ d s) = τ d (U^[k] s)
+  | 0 => rfl
+  | k + 1 => by
+    rw [Function.iterate_succ_apply', iterate_translate hE d s k, hE,
+      Function.iterate_succ_apply']
+
+/-! ## The normal form up to translation, and its finiteness -/
+
+/-- The state translated so that its leftmost support cell sits at `0`; `0` at the zero state. -/
+private noncomputable def FiniteConfiguration.normalForm (s : FiniteConfiguration) :
+  FiniteConfiguration :=
+  if h : s.support.Nonempty then τ (-(s.support.min' h)) s else 0
+
+private theorem exists_translate_normalForm (s : FiniteConfiguration) :
+    ∃ m : ℤ, s = τ m (normalForm s) := by
+  by_cases h : s.support.Nonempty
+  · refine ⟨s.support.min' h, ?_⟩
+    rw [normalForm, dite_eq_left h, translate_translate, add_neg_cancel, translate_zero]
+  · have hs : s = 0 := Finsupp.support_eq_empty.mp (Finset.not_nonempty_iff_eq_empty.mp h)
+    refine ⟨0, ?_⟩
+    rw [normalForm, dite_eq_right h, translate_zero, hs]
+
+private theorem FiniteConfiguration.normalForm_mem_regionStates {s : FiniteConfiguration} {D : ℕ}
+  (hD : diam s ≤ D) :
+    normalForm s ∈ regionStates D := by
+  by_cases h : s.support.Nonempty
+  · rw [normalForm, dite_eq_left h]
+    intro x hx
+    simp only [translate_support, Finset.mem_image] at hx
+    obtain ⟨y, hy, rfl⟩ := hx
+    have h1 := Finset.min'_le s.support y hy
+    have h2 := Finset.le_max' s.support y hy
+    have h3 := diam_eq' h
+    omega
+  · rw [normalForm, dite_eq_right h]
+    intro x hx
+    simp at hx
+
+/-- The configurations supported on `n` cells form a finite set. -/
+private theorem finite_regionStates (n : ℕ) : (regionStates n).Finite := by
+  have h : (regionStates n).encard = ((2 ^ n : ℕ) : ℕ∞) := by
+    rw [card_regionStates]; push_cast; rfl
+  exact Set.finite_of_encard_eq_coe h
+
+/-! ## Recurrence with drift -/
+
+/-- **The recurrence**: along an orbit of bounded diameter two steps have the same pattern up to
+translation, so a later step is an earlier one translated by some `d` (the pigeonhole on the
+normal form, which lives in the finite set of configurations on `D` cells). -/
+private theorem exists_drift {U : FiniteConfiguration → FiniteConfiguration} (s₀ :
+  FiniteConfiguration) {D : ℕ}
+    (hD : ∀ t, diam (U^[t] s₀) ≤ D) :
+    ∃ (t₁ P : ℕ) (d : ℤ), 0 < P ∧ U^[t₁ + P] s₀ = τ d (U^[t₁] s₀) := by
+  obtain ⟨a, b, hab, heq⟩ := Set.Finite.exists_lt_map_eq_of_forall_mem
+    (f := fun t : ℕ => normalForm (U^[t] s₀)) (fun t => normalForm_mem_regionStates (hD t))
+    (finite_regionStates D)
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_lt hab
+  obtain ⟨m₁, h₁⟩ := exists_translate_normalForm (U^[a] s₀)
+  obtain ⟨m₂, h₂⟩ := exists_translate_normalForm (U^[a + k + 1] s₀)
+  refine ⟨a, k + 1, m₂ - m₁, Nat.succ_pos k, ?_⟩
+  have heq' : normalForm (U^[a + k + 1] s₀) = normalForm (U^[a] s₀) := heq.symm
+  calc U^[a + (k + 1)] s₀
+      = τ m₂ (normalForm (U^[a + k + 1] s₀)) := h₂
+    _ = τ m₂ (normalForm (U^[a] s₀)) := by rw [heq']
+    _ = τ ((m₂ - m₁) + m₁) (normalForm (U^[a] s₀)) := by rw [sub_add_cancel]
+    _ = τ (m₂ - m₁) (τ m₁ (normalForm (U^[a] s₀))) :=
+        (translate_translate _ _ _).symm
+    _ = τ (m₂ - m₁) (U^[a] s₀) := by rw [← h₁]
+
+/-- **The drift accumulates**: at a rule commuting with translation, a drift of `d` over `P` steps
+from step `t₁` is a drift of `n d` over `n P` steps from every time `u ≥ t₁`. -/
+private theorem iterate_drift {U : FiniteConfiguration → FiniteConfiguration}
+    (hE : ∀ (d : ℤ) (s : FiniteConfiguration), U (τ d s) = τ d (U s))
+    (s₀ : FiniteConfiguration) {t₁ P : ℕ} {d : ℤ}
+    (hdrift : U^[t₁ + P] s₀ = τ d (U^[t₁] s₀)) :
+    ∀ u : ℕ, t₁ ≤ u → ∀ n : ℕ, U^[u + n * P] s₀ = τ ((n : ℤ) * d) (U^[u] s₀) := by
+  -- the drift holds at every time from `t₁` on
+  have hstep : ∀ u : ℕ, t₁ ≤ u → U^[u + P] s₀ = τ d (U^[u] s₀) := by
+    intro u hu
+    obtain ⟨k, rfl⟩ := Nat.exists_eq_add_of_le hu
+    rw [show t₁ + k + P = k + (t₁ + P) by omega, Function.iterate_add_apply, hdrift,
+      iterate_translate hE, show t₁ + k = k + t₁ by omega, Function.iterate_add_apply]
+  -- and accumulates over `n` periods
+  intro u hu n
+  induction n with
+  | zero => simp [translate_zero]
+  | succ n ih =>
+    have hu' : t₁ ≤ u + n * P := le_trans hu (Nat.le_add_right _ _)
+    rw [show u + (n + 1) * P = (u + n * P) + P by ring, hstep _ hu', ih, translate_translate]
+    congr 1
+    push_cast
+    ring
+
+/-- **Drift makes the column eventually periodic**: at a rule commuting with translation, if a
+later step of the orbit is an earlier one translated by `d`, the column at every cell is
+periodic with the time gap as period when `d = 0` and eventually constant `0` otherwise. -/
+private theorem eventuallyPeriodic_of_drift {U : FiniteConfiguration → FiniteConfiguration}
+    (hE : ∀ (d : ℤ) (s : FiniteConfiguration), U (τ d s) = τ d (U s))
+    (s₀ : FiniteConfiguration) (i : ℤ) {t₁ P : ℕ} {d : ℤ} (hP : 0 < P)
+    (hdrift : U^[t₁ + P] s₀ = τ d (U^[t₁] s₀)) :
+    DrivenColumns.EventuallyPeriodic (observedColumn U s₀ i) := by
+  have hiter := iterate_drift hE s₀ hdrift
+  have hstep : ∀ u : ℕ, t₁ ≤ u → U^[u + P] s₀ = τ d (U^[u] s₀) := by
+    intro u hu
+    simpa using hiter u hu 1
+  by_cases hd : d = 0
+  · subst hd
+    refine ⟨P, t₁, hP, fun u hu => ?_⟩
+    change (U^[u + P] s₀) i = (U^[u] s₀) i
+    rw [hstep u hu, translate_zero]
+  · -- the finitely many phases `t₁ + k`, `k < P`, are supported in one window
+    obtain ⟨B, hB⟩ : ∃ B : ℕ, ∀ k, k < P → ∀ x : ℤ, (U^[t₁ + k] s₀) x ≠ 0 → x.natAbs ≤ B := by
+      refine ⟨(Finset.range P).sup (fun k => (U^[t₁ + k] s₀).support.sup Int.natAbs), ?_⟩
+      intro k hk x hx
+      have hx' : x ∈ (U^[t₁ + k] s₀).support := Finsupp.mem_support_iff.mpr hx
+      exact (Finset.le_sup (f := Int.natAbs) hx').trans
+        (Finset.le_sup (f := fun k => (U^[t₁ + k] s₀).support.sup Int.natAbs)
+          (Finset.mem_range.mpr hk))
+    obtain ⟨n₀, hn₀⟩ : ∃ n₀ : ℕ, n₀ = B + i.natAbs + 1 := ⟨_, rfl⟩
+    have hd' : 1 ≤ d.natAbs := Int.natAbs_pos.mpr hd
+    have hzero : ∀ u : ℕ, t₁ + n₀ * P ≤ u → (U^[u] s₀) i = 0 := by
+      intro u hu
+      obtain ⟨r, rfl⟩ := Nat.exists_eq_add_of_le hu
+      have hdm := Nat.div_add_mod' r P
+      have hk : r % P < P := Nat.mod_lt r hP
+      have hu_eq : t₁ + n₀ * P + r = (t₁ + r % P) + (n₀ + r / P) * P := by
+        rw [Nat.add_mul]
+        omega
+      rw [hu_eq, hiter (t₁ + r % P) (Nat.le_add_right _ _) (n₀ + r / P), translate_apply_sub]
+      by_contra hne
+      have hb := hB (r % P) hk _ hne
+      obtain ⟨N', hN'⟩ : ∃ N' : ℕ, N' = n₀ + r / P := ⟨_, rfl⟩
+      rw [← hN'] at hb
+      have h1 : ((N' : ℤ) * d).natAbs = N' * d.natAbs := by
+        rw [Int.natAbs_mul, Int.natAbs_natCast]
+      have h2 : N' ≤ ((N' : ℤ) * d).natAbs := by
+        rw [h1]
+        exact Nat.le_mul_of_pos_right _ hd'
+      have h3 : ((N' : ℤ) * d).natAbs ≤ i.natAbs + (i - (N' : ℤ) * d).natAbs := by
+        have := Int.natAbs_sub_le i (i - (N' : ℤ) * d)
+        rwa [sub_sub_cancel] at this
+      have h4 : N' ≤ i.natAbs + B := h2.trans (h3.trans (Nat.add_le_add_left hb _))
+      have h5 : n₀ ≤ N' := by rw [hN']; exact Nat.le_add_right _ _
+      omega
+    refine ⟨1, t₁ + n₀ * P, one_pos, fun u hu => ?_⟩
+    change (U^[u + 1] s₀) i = (U^[u] s₀) i
+    rw [hzero u hu, hzero (u + 1) (by omega)]
+
+/-! ## The theorems -/
+
+/-- At a quiescent local rule the diameter along an orbit that never grows is bounded, hence the
+column is eventually periodic. -/
+private theorem eventuallyPeriodic_of_orbit_diam_le (f : LocalRule)
+    (hq : f 0 0 0 = 0) (s₀ : FiniteConfiguration) (i : ℤ)
+    (hO : ∀ t : ℕ, diam ((finRule f hq)^[t + 1] s₀) ≤ diam ((finRule f hq)^[t] s₀)) :
+    DrivenColumns.EventuallyPeriodic (observedColumn (finRule f hq) s₀ i) := by
+  have hmono : ∀ t : ℕ, diam ((finRule f hq)^[t] s₀) ≤ diam s₀ := by
+    intro t
+    induction t with
+    | zero => exact le_rfl
+    | succ j ih => exact (hO j).trans ih
+  obtain ⟨t₁, P, d, hP, hdrift⟩ := exists_drift s₀ hmono
+  exact eventuallyPeriodic_of_drift (fun d s => finRule_translate f hq d s) s₀ i hP hdrift
+
+/-- At a local rule whose diameter never grows, every observed column is eventually periodic:
+the pattern up to translation ranges over a finite set, so it recurs, and a recurrence with drift
+`d` per period `P` makes the column periodic with period `P` when `d = 0` and eventually
+constant `0` otherwise. -/
+theorem eventuallyPeriodic_observedColumn_of_diam_le (f : LocalRule)
+    (hq : f 0 0 0 = 0) (hU : ∀ s, diam (finRule f hq s) ≤ diam s)
+    (s₀ : FiniteConfiguration) (i : ℤ) :
+    DrivenColumns.EventuallyPeriodic (observedColumn (finRule f hq) s₀ i) :=
+  eventuallyPeriodic_of_orbit_diam_le f hq s₀ i
+    (fun t => by rw [Function.iterate_succ_apply']; exact hU _)
+
+/-- At every rule of the zero class the diameter never grows: the three diameter lemmas of
+`EndpointClasses`, one per clause. -/
+private theorem LocalRule.ZeroByEndpoints.diam_finRule_le (f : LocalRule)
+    (hq : f 0 0 0 = 0) (hf : ZeroByEndpoints f) : ∀ s, diam (finRule f hq s) ≤ diam s := by
+  rcases hf with h | h | h
+  · exact diam_finRule_le_of_noTap h.1 h.2
+  · exact diam_finRule_le_of_leftTap_rightDies h.1 h.2.1 h.2.2.1 h.2.2.2
+  · exact diam_finRule_le_of_rightTap_leftDies h.1 h.2.1 h.2.2.1 h.2.2.2
+
+/-- **The corollary at the zero class**: at every quiescent rule meeting `LocalRule.ZeroByEndpoints`
+— no tap on either side, or one tap with the other endpoint always dying — every observed column is
+eventually periodic ([RuleSpace] §3 Proposition 3.1). -/
+theorem LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn
+    (f : LocalRule) (hq : f 0 0 0 = 0) (hf : ZeroByEndpoints f)
+    (s₀ : FiniteConfiguration) (i : ℤ) :
+    DrivenColumns.EventuallyPeriodic (observedColumn (finRule f hq) s₀ i) :=
+  eventuallyPeriodic_observedColumn_of_diam_le f hq
+    (LocalRule.ZeroByEndpoints.diam_finRule_le f hq hf) s₀ i
+
+/-- **The contrapositive along the orbit of the seed**: an observed column that is not eventually
+periodic forces the diameter to grow at some step of the orbit of `s₀` itself — the observer's
+unending repairs are paid for by the system's growth. -/
+theorem exists_diam_lt_iterate_of_not_eventuallyPeriodic
+    (f : LocalRule) (hq : f 0 0 0 = 0) (s₀ : FiniteConfiguration) (i : ℤ)
+    (h : ¬ DrivenColumns.EventuallyPeriodic (observedColumn (finRule f hq) s₀ i)) :
+    ∃ t : ℕ, diam ((finRule f hq)^[t] s₀) < diam ((finRule f hq)^[t + 1] s₀) := by
+  by_contra hcon
+  push Not at hcon
+  exact h (eventuallyPeriodic_of_orbit_diam_le f hq s₀ i hcon)
+
+/-- A cell observation that is not eventually periodic forces the diameter to grow along the
+orbit somewhere: the observer's unending repairs are paid for by the system's growth. -/
+theorem exists_diam_lt_of_not_eventuallyPeriodic
+    (f : LocalRule) (hq : f 0 0 0 = 0) (s₀ : FiniteConfiguration) (i : ℤ)
+    (h : ¬ DrivenColumns.EventuallyPeriodic (observedColumn (finRule f hq) s₀ i)) :
+    ∃ s, diam s < diam (finRule f hq s) := by
+  obtain ⟨t, ht⟩ := exists_diam_lt_iterate_of_not_eventuallyPeriodic f hq s₀ i h
+  exact ⟨_, by rwa [← Function.iterate_succ_apply' (finRule f hq) t s₀]⟩
+
+/-! ## The rational ray -/
+
+/-- **The rational ray**: the value at `e + ⌊p t / q⌋` at step `t`; at `p = 0` it is the observed
+column, and `observedRay` at velocity `1` is its case `p = q = 1`. -/
+def observedRationalRay (U : FiniteConfiguration → FiniteConfiguration) (s₀ : FiniteConfiguration)
+  (p q : ℕ)
+    (e : ℤ) : ℕ → ZMod 2 :=
+  fun t => (U^[t] s₀) (e + ((p * t / q : ℕ) : ℤ))
+
+/-- **Speed zero is the observed column** ([RuleSpace] §4 Proposition 4.4, row RS-9). -/
+theorem observedRationalRay_zero (U : FiniteConfiguration → FiniteConfiguration) (s₀ :
+  FiniteConfiguration)
+    (q : ℕ) (e : ℤ) : observedRationalRay U s₀ 0 q e = observedColumn U s₀ e := by
+  funext t
+  simp [observedRationalRay, observedColumn]
+
+/-- **The ray sampled every `q P` steps**: under a drift of `d` per `P` steps from step `t₁`, the
+ray's value at `u + n q P` is the time-`u` state read `n (p P − q d)` cells past the ray's
+step-`u` position. -/
+private theorem observedRationalRay_sample {U : FiniteConfiguration → FiniteConfiguration}
+    (hE : ∀ (d : ℤ) (s : FiniteConfiguration), U (τ d s) = τ d (U s))
+    (s₀ : FiniteConfiguration) {t₁ P : ℕ} {d : ℤ}
+    (hdrift : U^[t₁ + P] s₀ = τ d (U^[t₁] s₀)) (p q : ℕ) (hq0 : 0 < q) (e : ℤ)
+    (u : ℕ) (hu : t₁ ≤ u) (n : ℕ) :
+    observedRationalRay U s₀ p q e (u + n * (q * P)) =
+      (U^[u] s₀) (e + ((p * u / q : ℕ) : ℤ) + (n : ℤ) * ((p : ℤ) * P - (q : ℤ) * d)) := by
+  have hdiv : p * (u + n * (q * P)) / q = p * u / q + n * p * P := by
+    rw [show p * (u + n * (q * P)) = p * u + (n * p * P) * q by ring,
+      Nat.add_mul_div_right _ _ hq0]
+  unfold observedRationalRay
+  rw [hdiv, show u + n * (q * P) = u + (n * q) * P by ring,
+    iterate_drift hE s₀ hdrift u hu (n * q), translate_apply_sub]
+  congr 1
+  push_cast
+  ring
+
+/-- **A drift makes every rational ray eventually periodic**: sampled every `q P` steps the ray's
+position relative to the pattern changes by `p P − q d` cells, so the ray is periodic with period
+`q P` from step `t₁` when that is zero, and otherwise leaves the finitely many phases' supports
+for good and is eventually constant `0`. -/
+private theorem eventuallyPeriodic_ray_of_drift {U : FiniteConfiguration → FiniteConfiguration}
+    (hE : ∀ (d : ℤ) (s : FiniteConfiguration), U (τ d s) = τ d (U s))
+    (s₀ : FiniteConfiguration) (p q : ℕ) (hq0 : 0 < q) (e : ℤ) {t₁ P : ℕ} {d : ℤ} (hP : 0 < P)
+    (hdrift : U^[t₁ + P] s₀ = τ d (U^[t₁] s₀)) :
+    DrivenColumns.EventuallyPeriodic (observedRationalRay U s₀ p q e) := by
+  have hsample := observedRationalRay_sample hE s₀ hdrift p q hq0 e
+  have hQ : 0 < q * P := Nat.mul_pos hq0 hP
+  by_cases hδ : (p : ℤ) * P - (q : ℤ) * d = 0
+  · refine ⟨q * P, t₁, hQ, fun u hu => ?_⟩
+    have h := hsample u hu 1
+    rw [one_mul, hδ, mul_zero, add_zero] at h
+    exact h
+  · -- the finitely many phases `t₁ + r`, `r < q P`, are supported in one window
+    obtain ⟨B, hB⟩ : ∃ B : ℕ, ∀ r, r < q * P → ∀ x : ℤ, (U^[t₁ + r] s₀) x ≠ 0 → x.natAbs ≤ B := by
+      refine ⟨(Finset.range (q * P)).sup (fun r => (U^[t₁ + r] s₀).support.sup Int.natAbs), ?_⟩
+      intro r hr x hx
+      have hx' : x ∈ (U^[t₁ + r] s₀).support := Finsupp.mem_support_iff.mpr hx
+      exact (Finset.le_sup (f := Int.natAbs) hx').trans
+        (Finset.le_sup (f := fun r => (U^[t₁ + r] s₀).support.sup Int.natAbs)
+          (Finset.mem_range.mpr hr))
+    -- and the ray's position at those phases is bounded as well
+    obtain ⟨C, hC⟩ : ∃ C : ℕ, C = p * (t₁ + q * P) := ⟨_, rfl⟩
+    have hX : ∀ r, r < q * P →
+        (e + ((p * (t₁ + r) / q : ℕ) : ℤ)).natAbs ≤ e.natAbs + C := by
+      intro r hr
+      calc (e + ((p * (t₁ + r) / q : ℕ) : ℤ)).natAbs
+          ≤ e.natAbs + ((p * (t₁ + r) / q : ℕ) : ℤ).natAbs := Int.natAbs_add_le _ _
+        _ = e.natAbs + p * (t₁ + r) / q := by rw [Int.natAbs_natCast]
+        _ ≤ e.natAbs + C := by
+          have h1 : p * (t₁ + r) / q ≤ p * (t₁ + r) := Nat.div_le_self _ _
+          have h2 : p * (t₁ + r) ≤ p * (t₁ + q * P) := Nat.mul_le_mul_left _ (by omega)
+          omega
+    obtain ⟨n₀, hn₀⟩ : ∃ n₀ : ℕ, n₀ = B + e.natAbs + C + 1 := ⟨_, rfl⟩
+    have hδ' : 1 ≤ ((p : ℤ) * P - (q : ℤ) * d).natAbs := Int.natAbs_pos.mpr hδ
+    have hzero : ∀ u : ℕ, t₁ + n₀ * (q * P) ≤ u → observedRationalRay U s₀ p q e u = 0 := by
+      intro u hu
+      obtain ⟨r, rfl⟩ := Nat.exists_eq_add_of_le hu
+      have hdm := Nat.div_add_mod' r (q * P)
+      have hr : r % (q * P) < q * P := Nat.mod_lt r hQ
+      have hu_eq : t₁ + n₀ * (q * P) + r =
+          (t₁ + r % (q * P)) + (n₀ + r / (q * P)) * (q * P) := by
+        rw [Nat.add_mul]
+        omega
+      rw [hu_eq, hsample (t₁ + r % (q * P)) (Nat.le_add_right _ _) (n₀ + r / (q * P))]
+      by_contra hne
+      have hb := hB (r % (q * P)) hr _ hne
+      have hx := hX (r % (q * P)) hr
+      obtain ⟨N', hN'⟩ : ∃ N' : ℕ, N' = n₀ + r / (q * P) := ⟨_, rfl⟩
+      obtain ⟨X, hXd⟩ : ∃ X : ℤ, X = e + ((p * (t₁ + r % (q * P)) / q : ℕ) : ℤ) := ⟨_, rfl⟩
+      obtain ⟨δ, hδd⟩ : ∃ δ : ℤ, δ = (p : ℤ) * P - (q : ℤ) * d := ⟨_, rfl⟩
+      rw [← hN', ← hXd, ← hδd] at hb
+      rw [← hXd] at hx
+      rw [← hδd] at hδ'
+      have h1 : ((N' : ℤ) * δ).natAbs = N' * δ.natAbs := by
+        rw [Int.natAbs_mul, Int.natAbs_natCast]
+      have h2 : N' ≤ ((N' : ℤ) * δ).natAbs := by
+        rw [h1]
+        exact Nat.le_mul_of_pos_right _ hδ'
+      have h3 : ((N' : ℤ) * δ).natAbs ≤ (X + (N' : ℤ) * δ).natAbs + X.natAbs := by
+        have := Int.natAbs_sub_le (X + (N' : ℤ) * δ) X
+        rwa [add_sub_cancel_left] at this
+      have h5 : n₀ ≤ N' := by rw [hN']; exact Nat.le_add_right _ _
+      omega
+    refine ⟨1, t₁ + n₀ * (q * P), one_pos, fun u hu => ?_⟩
+    rw [hzero u hu, hzero (u + 1) (by omega)]
+
+/-- **Every rational ray at an orbit whose diameter never rises is eventually periodic.** The orbit
+repeats up to a translation `d` every `P` steps from some step on; sampled every `q P` steps the
+ray's position relative to the pattern changes by `p P − q d` cells, so the ray reads one relative
+cell for ever when that is zero and leaves the pattern for good otherwise ([RuleSpace] §4
+Proposition 4.4, row RS-9, at the ray of speed `p / q` in place of the column). -/
+theorem eventuallyPeriodic_observedRationalRay_of_diam_le (f : LocalRule)
+    (hq : f 0 0 0 = 0) (hU : ∀ s, diam (finRule f hq s) ≤ diam s) (s₀ : FiniteConfiguration)
+    (p q : ℕ) (hq0 : 0 < q) (e : ℤ) :
+    DrivenColumns.EventuallyPeriodic (observedRationalRay (finRule f hq) s₀ p q e) := by
+  have hmono : ∀ t : ℕ, diam ((finRule f hq)^[t] s₀) ≤ diam s₀ := by
+    intro t
+    induction t with
+    | zero => exact le_rfl
+    | succ j ih => rw [Function.iterate_succ_apply']; exact (hU _).trans ih
+  obtain ⟨t₁, P, d, hP, hdrift⟩ := exists_drift s₀ hmono
+  exact eventuallyPeriodic_ray_of_drift (fun d s => finRule_translate f hq d s) s₀ p q hq0 e
+    hP hdrift
+
+/-- **The rational ray's corollary at the zero class**: at every quiescent rule meeting
+`LocalRule.ZeroByEndpoints`, every rational ray from every seed is eventually periodic
+([RuleSpace] §4 Proposition 4.4, row RS-9). -/
+theorem LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedRationalRay
+    (f : LocalRule) (hq : f 0 0 0 = 0) (hf : ZeroByEndpoints f)
+    (s₀ : FiniteConfiguration) (p q : ℕ) (hq0 : 0 < q) (e : ℤ) :
+    DrivenColumns.EventuallyPeriodic (observedRationalRay (finRule f hq) s₀ p q e) :=
+  eventuallyPeriodic_observedRationalRay_of_diam_le f hq
+    (LocalRule.ZeroByEndpoints.diam_finRule_le f hq hf) s₀ p q hq0 e
+
+/-- **All three hypotheses of the rational ray's theorem are met at once, and the conclusion holds
+there**: the shift `f170`, quiescent, with its diameter never rising by `zeroByEndpoints_f170`,
+the single seed, speed `1/2` and start `0`. -/
+theorem eventuallyPeriodic_observedRationalRay_of_diam_le_nonvacuous :
+    f170 0 0 0 = 0 ∧ (∀ s, diam (finRule f170 hq170 s) ≤ diam s) ∧ 0 < 2 ∧
+      DrivenColumns.EventuallyPeriodic
+        (observedRationalRay (finRule f170 hq170) (Finsupp.single 0 1) 1 2 0) :=
+  ⟨hq170, LocalRule.ZeroByEndpoints.diam_finRule_le f170 hq170 zeroByEndpoints_f170, by norm_num,
+    eventuallyPeriodic_observedRationalRay_of_diam_le f170 hq170
+      (LocalRule.ZeroByEndpoints.diam_finRule_le f170 hq170 zeroByEndpoints_f170) _ 1 2
+      (by norm_num) 0⟩
+
+/-! ## The witness and the guard -/
+
+/-- The column of the shift `f170` (each cell reads its right neighbour) from the single seed,
+read at the center: `1` at time `0` and `0` at every later step. -/
+theorem observedColumn_f170_single :
+    observedColumn (finRule f170 hq170) (Finsupp.single (0 : ℤ) (1 : ZMod 2)) 0 =
+      fun t => if t = 0 then 1 else 0 := by
+  have hit : ∀ (t : ℕ) (s : FiniteConfiguration) (j : ℤ),
+      ((finRule f170 hq170)^[t] s) j = s (j + t) := by
+    intro t
+    induction t with
+    | zero => intro s j; simp
+    | succ t ih =>
+      intro s j
+      rw [Function.iterate_succ_apply, ih, finRule_apply]
+      change s (j + (t : ℤ) + 1) = s (j + ((t + 1 : ℕ) : ℤ))
+      rw [Nat.cast_succ, add_assoc]
+  funext t
+  change ((finRule f170 hq170)^[t] (Finsupp.single (0 : ℤ) (1 : ZMod 2))) 0 = _
+  rw [hit, Finsupp.single_apply]
+  by_cases ht : t = 0
+  · simp [ht]
+  · have h0 : ¬ ((0 : ℤ) = (t : ℤ)) := by omega
+    simp [ht, h0]
+
+theorem hq90 : f90 0 0 0 = 0 := by decide
+
+/-- Every iterate from the single seed is symmetric under `i ↦ -i`: `f90`'s rule sums the two
+neighbours and drops the center, and a seed that is itself symmetric keeps that symmetry through
+every step. -/
+private theorem finRule_f90_single_neg (t : ℕ) (i : ℤ) :
+    ((finRule f90 hq90)^[t] (Finsupp.single (0 : ℤ) (1 : ZMod 2))) (-i)
+      = ((finRule f90 hq90)^[t] (Finsupp.single (0 : ℤ) (1 : ZMod 2))) i := by
+  induction t generalizing i with
+  | zero =>
+      simp only [Function.iterate_zero, id_eq, Finsupp.single_apply]
+      split_ifs with h1 h2 h2 <;> first | rfl | (exfalso; omega)
+  | succ t ih =>
+      rw [Function.iterate_succ_apply', finRule_apply, finRule_apply, f90, f90,
+        show -i - 1 = -(i + 1) by ring, show -i + 1 = -(i - 1) by ring, ih (i + 1), ih (i - 1)]
+      ring
+
+/-- **The column at a growing rule, from the single seed** ([RuleSpace] §4 Remark 4.1, row
+RS-4). `f90`'s rule sums the two neighbours and drops the center, so past step `0` the value
+at the seeded cell is the sum of
+two neighbours the seed's own symmetry keeps equal (`finRule_f90_single_neg`), and that sum
+vanishes in `ZMod 2`: the center reads `1` at time `0` and `0` at every time after, exactly as at
+the zero-class shift `f170` (`observedColumn_f170_single`) despite `f90` growing rather than
+staying quiescent. -/
+theorem observedColumn_f90_single :
+    observedColumn (finRule f90 hq90) (Finsupp.single (0 : ℤ) (1 : ZMod 2)) 0 =
+      fun t => if t = 0 then 1 else 0 := by
+  have hzero : ∀ x : ZMod 2, x + x = 0 := by decide
+  funext t
+  cases t with
+  | zero =>
+      change ((finRule f90 hq90)^[0] (Finsupp.single (0 : ℤ) (1 : ZMod 2))) 0 = _
+      simp
+  | succ t =>
+      change ((finRule f90 hq90)^[t + 1] (Finsupp.single (0 : ℤ) (1 : ZMod 2))) 0 = _
+      rw [Function.iterate_succ_apply', finRule_apply, f90,
+        show (0 : ℤ) - 1 = -1 by ring, show (0 : ℤ) + 1 = 1 by ring,
+        ← finRule_f90_single_neg t 1]
+      simp only [Nat.succ_ne_zero, reduceIte]
+      exact hzero _
+
+/-- **The witness for [RuleSpace] §4 Remark 4.1's "the converse fails"** (row RS-4): a growing
+rule whose single-seed center column is nonetheless eventually periodic — the general implication
+runs only from a bounded diameter to eventual periodicity, and `f90` shows periodicity does not
+force the diameter back down. Packaged in the same existential shape as
+`LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn_nonvacuous`, with
+`LocalRule.GrowsByEndpoints` in place of `LocalRule.ZeroByEndpoints`. -/
+theorem observedColumn_f90_eventually_periodic_witness :
+    ∃ (f : LocalRule) (hq : f 0 0 0 = 0), GrowsByEndpoints f ∧
+      DrivenColumns.EventuallyPeriodic
+        (observedColumn (finRule f hq) (Finsupp.single 0 1) 0) := by
+  refine ⟨f90, hq90, growsByEndpoints_f90, 1, 1, one_pos, fun u hu => ?_⟩
+  rw [observedColumn_f90_single]
+  have h1 : u ≠ 0 := by omega
+  simp [h1]
+
+/-- **Both hypotheses of the zero-class corollary are met at once**: the shift `f170`, quiescent and
+zero-class, whose single-seed column at the center is `1` then `0` forever
+(`observedColumn_f170_single`). -/
+theorem LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn_nonvacuous :
+    ∃ (f : LocalRule) (hq : f 0 0 0 = 0), ZeroByEndpoints f ∧
+      DrivenColumns.EventuallyPeriodic
+        (observedColumn (finRule f hq) (Finsupp.single 0 1) 0) :=
+  ⟨f170, hq170, zeroByEndpoints_f170,
+    LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn f170 hq170 zeroByEndpoints_f170 _ _⟩
+
+/-- **Guard: the diameter hypothesis is load-bearing.** At rule 30 the single seed has diameter `1`
+and its image has diameter `3`, so
+`∀ s, FiniteConfiguration.diam (LocalRule.finRule f30 hq30 s) ≤ FiniteConfiguration.diam s` fails
+there and `eventuallyPeriodic_observedColumn_of_diam_le` does not apply. Nothing is claimed about
+the column itself. -/
+theorem diam_lt_finRule_f30_single :
+    diam (Finsupp.single (0 : ℤ) (1 : ZMod 2)) <
+      diam (finRule f30 hq30 (Finsupp.single (0 : ℤ) (1 : ZMod 2))) := by
+  have hd1 : diam (Finsupp.single (0 : ℤ) (1 : ZMod 2)) = 1 := by simp [diam]
+  have hm1 : (-1 : ℤ) ∈ (finRule f30 hq30 (Finsupp.single (0 : ℤ) (1 : ZMod 2))).support := by
+    rw [Finsupp.mem_support_iff, finRule_apply]
+    simp [f30]
+  have hp1 : (1 : ℤ) ∈ (finRule f30 hq30 (Finsupp.single (0 : ℤ) (1 : ZMod 2))).support := by
+    rw [Finsupp.mem_support_iff, finRule_apply]
+    simp [f30]
+  have hne : (finRule f30 hq30 (Finsupp.single (0 : ℤ) (1 : ZMod 2))).support.Nonempty :=
+    ⟨1, hp1⟩
+  have hmax := Finset.le_max' _ 1 hp1
+  have hmin := Finset.min'_le _ (-1) hm1
+  rw [hd1, diam_eq' hne]
+  omega
+
+end ECA
+
+/-! ## Axiom audit
+
+Every public theorem above is `#print axioms`-clean on the standard triple, and the guards below
+make that build-enforced. -/
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.eventuallyPeriodic_observedColumn_of_diam_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.eventuallyPeriodic_observedColumn_of_diam_le
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.exists_diam_lt_iterate_of_not_eventuallyPeriodic' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.exists_diam_lt_iterate_of_not_eventuallyPeriodic
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.exists_diam_lt_of_not_eventuallyPeriodic' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.exists_diam_lt_of_not_eventuallyPeriodic
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.observedColumn_f170_single' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.observedColumn_f170_single
+
+/-- info: 'ECA.hq90' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.hq90
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.observedColumn_f90_single' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.observedColumn_f90_single
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.observedColumn_f90_eventually_periodic_witness' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.observedColumn_f90_eventually_periodic_witness
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedColumn_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.diam_lt_finRule_f30_single' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.diam_lt_finRule_f30_single
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.observedRationalRay_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.observedRationalRay_zero
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.eventuallyPeriodic_observedRationalRay_of_diam_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.eventuallyPeriodic_observedRationalRay_of_diam_le
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedRationalRay' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.ZeroByEndpoints.eventuallyPeriodic_observedRationalRay
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.eventuallyPeriodic_observedRationalRay_of_diam_le_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.eventuallyPeriodic_observedRationalRay_of_diam_le_nonvacuous

@@ -2,7 +2,7 @@ name: CI
 
 # Snapshot-release repo (lean-elementary-cellular-automata): build + whole-library axiom
 # audit + docs on pushes to main (rare, curated) and manual dispatch. The
-# package has eight library roots and no default target, so every step names
+# package has two library roots and no default target, so every step names
 # them through ROOTS. Docs are built with the lake-native doc-gen4 facet
 # (`<Root>:docs` — doc-gen4 is an inherited, pinned dependency via Foundation)
 # and deployed to Pages directly, the shape FormalizedFormalLogic/Foundation
@@ -11,7 +11,12 @@ name: CI
 # link-against-hosted-Mathlib mode yet, so the docs still cover the dependency
 # closure; the free-disk step keeps the margin.
 env:
-  ROOTS: "CellularAutomata"
+  ROOTS: "Nonautonomous ECA"
+  # Library roots the package no longer has. Their pages sit outside every
+  # current root's directory, so the per-root prune below never reaches them;
+  # the prune step deletes each one's directory and root page outright.
+  # `CellularAutomata` split into the two roots above on 2026-10-14.
+  RETIRED_ROOTS: "CellularAutomata"
 
 on:
   push:
@@ -71,10 +76,12 @@ jobs:
           key: deps-${{ runner.os }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}
           restore-keys: |
             deps-${{ runner.os }}-${{ hashFiles('lean-toolchain') }}-
+      # Warnings are errors (`--wfail`), the Lean community's standard: a linter
+      # warning is fixed in the source, never suppressed at file level.
       - uses: leanprover/lean-action@v1
         with:
           use-github-cache: false
-          build-args: "${{ env.ROOTS }}"
+          build-args: "--wfail ${{ env.ROOTS }}"
       # Whole-library axiom audit, run BEFORE the expensive docs step so a
       # violation fails fast. It checks EVERY declaration under each root — not only
       # the guarded capstones — against the same allowlist, so a `sorry`, a
@@ -130,6 +137,15 @@ jobs:
       - name: Prune pages of retired modules
         run: |
           pruned=0
+          for r in $RETIRED_ROOTS; do
+            for page in ".lake/build/doc/$r" ".lake/build/doc/$r.html"; do
+              if [ -e "$page" ]; then
+                echo "prune: $page (retired library root $r)"
+                rm -rf "$page"
+                pruned=$((pruned + 1))
+              fi
+            done
+          done
           for r in $ROOTS; do
             [ -d ".lake/build/doc/$r" ] || continue
             while IFS= read -r -d '' page; do

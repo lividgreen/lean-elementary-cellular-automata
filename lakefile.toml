@@ -1,26 +1,35 @@
 name = "elementary_cellular_automata"
-version = "0.1.0"
+version = "0.2.0"
 keywords = ["math", "cellular-automata", "elementary-cellular-automata", "learning-theory"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
+autoImplicit = false
 relaxedAutoImplicit = false
 weak.linter.mathlibStandardSet = true
+weak.linter.style.header = false
 maxSynthPendingDepth = 3
 
 [[require]]
 name = "mathlib"
 scope = "leanprover-community"
-rev = "v4.34.0"
+rev = "v4.35.0"
 
 [[require]]
 name = "classical_upstream"
 git = "https://github.com/lividgreen/lean-classical-upstream"
-rev = "v0.2.0"
+rev = "v0.3.0"
 
 [[lean_lib]]
-name = "CellularAutomata"
+name = "ECA"
 # The glob must include the root itself (`<Root>.*` matches the root and its submodules),
 # for the same reason as the `ALT` library of the package that requires this one.
-roots = ["CellularAutomata"]
-globs = ["CellularAutomata.*"]
+roots = ["ECA"]
+globs = ["ECA.*"]
+
+[[lean_lib]]
+name = "Nonautonomous"
+# The glob must include the root itself (`<Root>.*` matches the root and its submodules),
+# for the same reason as the `ECA` library above.
+roots = ["Nonautonomous"]
+globs = ["Nonautonomous.*"]
