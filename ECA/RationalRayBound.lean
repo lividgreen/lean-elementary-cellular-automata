@@ -330,13 +330,15 @@ private theorem pair_of_one (t : ℕ) (x : ℤ)
     rw [h1, h2]
     exact h
 
-/-- The ray count from a bound on every line of the pair `(q - p, q + p)`. -/
-private theorem ray_card_le_of_line (p q : ℕ) (hp : 0 < p) (hpq : p < q)
-    (hline : ∀ (c : ℤ) (K : ℕ), lineCount ((q : ℤ) - p) ((q : ℤ) + p) c K ≤ Nat.fib (K + 1))
-    (e : ℤ) (K : ℕ) :
+/-- The ray count from a bound `B K` on the lines `(q - p) a - (q + p) b = q e - r`, `r < q`, of
+the pair `(q - p, q + p)`. -/
+private theorem ray_card_le_of_line (p q : ℕ) (hp : 0 < p) (hpq : p < q) (B : ℕ → ℕ)
+    (e : ℤ)
+    (hline : ∀ r < q, ∀ K : ℕ, lineCount ((q : ℤ) - p) ((q : ℤ) + p) (q * e - r) K ≤ B K)
+    (K : ℕ) :
     ((Finset.range (2 ^ K)).filter fun t =>
       observedRationalRay (finRule f90 hq90) (Finsupp.single (0 : ℤ) (1 : ZMod 2)) p q e t
-        = 1).card ≤ q * Nat.fib (K + 1) := by
+        = 1).card ≤ q * B K := by
   have hq : 0 < q := by omega
   set T : Finset (ℕ × ℕ) := (Finset.range q).biUnion fun r : ℕ =>
     (Finset.range (2 ^ K) ×ˢ Finset.range (2 ^ K)).filter fun ab : ℕ × ℕ =>
@@ -369,10 +371,10 @@ private theorem ray_card_le_of_line (p q : ℕ) (hp : 0 < p) (hpq : p < q)
         fun ab : ℕ × ℕ => ab.1 &&& ab.2 = 0 ∧
           ((q : ℤ) - p) * ab.1 - ((q : ℤ) + p) * ab.2 = q * e - r).card :=
       Finset.card_biUnion_le
-    _ ≤ ∑ r ∈ Finset.range q, Nat.fib (K + 1) :=
-      Finset.sum_le_sum fun r _ =>
-        hline (q * e - r) K
-    _ = q * Nat.fib (K + 1) := by simp
+    _ ≤ ∑ r ∈ Finset.range q, B K :=
+      Finset.sum_le_sum fun r hr =>
+        hline r (Finset.mem_range.mp hr) K
+    _ = q * B K := by simp
 
 /-- **A Fibonacci bound on the ones of a ray of rule `90` from the single seed**
 ([RuleSpace] §5 Proposition 5.5, the pairs with a one-step proof): a ray of speed `p / q`
@@ -404,7 +406,8 @@ theorem card_ones_observedRationalRay_f90_single_le (p q : ℕ) (hp : 0 < p) (hp
     · refine Or.inr ⟨h, hev, ?_⟩
       obtain ⟨r, hr⟩ := hev
       exact ⟨q - r, by omega⟩
-  exact ray_card_le_of_line p q hp hpq (fun c K => lineCount_le_fib_of_double _ _ hcl' c K) e K
+  exact ray_card_le_of_line p q hp hpq (fun K => Nat.fib (K + 1)) e
+    (fun r _ K => lineCount_le_fib_of_double _ _ hcl' _ K) K
 
 /-- The hypotheses of the ray bound are met at speed `1 / 3`, where `(q - p, q + p) = (2, 4)`
 is the double of the closing pair `(1, 2)`. -/
@@ -795,8 +798,8 @@ theorem card_ones_observedRationalRay_f90_single_le_fib (p q : ℕ)
     ((Finset.range (2 ^ K)).filter fun t =>
       observedRationalRay (finRule f90 hq90) (Finsupp.single (0 : ℤ) (1 : ZMod 2)) p q e t
         = 1).card ≤ q * Nat.fib (K + 1) :=
-  ray_card_le_of_line p q hp hpq
-    (fun c K => lineCount_le_fib_of_pos _ _ (by omega) (by omega) c K) e K
+  ray_card_le_of_line p q hp hpq (fun K => Nat.fib (K + 1)) e
+    (fun r _ K => lineCount_le_fib_of_pos _ _ (by omega) (by omega) _ K) K
 
 /-- The hypotheses of the two-branch bound hold together at `G = 1`, `E = 2`, where the bound is
 attained at `K = 3` and `n = 4`. -/

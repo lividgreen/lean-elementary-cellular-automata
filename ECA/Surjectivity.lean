@@ -130,11 +130,11 @@ theorem not_surjective_of_hasNoPreimage (f : LocalRule)
 def toWord (w : List Nat) : List (ZMod 2) := w.map fun b => (b : ZMod 2)
 
 /-- The Boolean check of one entry of `orphans`. -/
-def orphanOk (e : Nat × List Nat) : Bool :=
+private def orphanOk (e : Nat × List Nat) : Bool :=
   decide (e.1 < 256) && hasNoPreimage (LocalRule.ofWolfram (Fin.ofNat 256 e.1)) (toWord e.2)
 
 /-- The kernel decision that every entry of `orphans` passes `orphanOk`. -/
-theorem orphans_all : orphans.all orphanOk = true := by decide +kernel
+private theorem orphans_all : orphans.all orphanOk = true := by decide +kernel
 
 /-- **Every entry of `orphans` passes the check at its rule.** -/
 theorem orphans_pass : ∀ e ∈ orphans, ∃ h : e.1 < 256,
@@ -190,7 +190,7 @@ def LocalRule.isCollision (f : LocalRule) (u v : List (ZMod 2)) : Bool :=
     (List.range u.length).all fun r => decide (cyclicValue f u r = cyclicValue f v r)
 
 /-- The configuration repeating a word of positive length with period its length. -/
-def periodic (u : List (ZMod 2)) (i : ℤ) : ZMod 2 := u.getD (i % (u.length : ℤ)).toNat 0
+private def periodic (u : List (ZMod 2)) (i : ℤ) : ZMod 2 := u.getD (i % (u.length : ℤ)).toNat 0
 
 private theorem emod_pred (p : Nat) (hp : 0 < p) (i : ℤ) :
     ((i - 1) % (p : ℤ)).toNat = ((i % p).toNat + p - 1) % p := by
@@ -264,12 +264,12 @@ theorem not_injective_of_collision (f : LocalRule) (u v : List (ZMod 2))
 /-! ### The data -/
 
 /-- The Boolean check of one entry of `collisions`. -/
-def collisionOk (e : Nat × List Nat × List Nat) : Bool :=
+private def collisionOk (e : Nat × List Nat × List Nat) : Bool :=
   decide (e.1 < 256) && isCollision (LocalRule.ofWolfram (Fin.ofNat 256 e.1)) (toWord e.2.1) (toWord
     e.2.2)
 
 /-- The kernel decision that every entry of `collisions` passes `collisionOk`. -/
-theorem collisions_all : collisions.all collisionOk = true := by decide +kernel
+private theorem collisions_all : collisions.all collisionOk = true := by decide +kernel
 
 /-- **Every entry of `collisions` passes the check at its rule.** -/
 theorem collisions_pass : ∀ e ∈ collisions, ∃ h : e.1 < 256,
@@ -294,10 +294,10 @@ theorem mem_collisions_iff (n : Fin 256) :
   decide +kernel
 
 /-- **There are `250` such numbers, one entry each.** -/
-theorem collisions_length : collisions.length = 250 := by decide +kernel
+private theorem collisions_length : collisions.length = 250 := by decide +kernel
 
 /-- No rule number occurs twice in `collisions`. -/
-theorem collisions_nodup : (collisions.map Prod.fst).Nodup := by decide +kernel
+private theorem collisions_nodup : (collisions.map Prod.fst).Nodup := by decide +kernel
 
 /-- **A rule outside the six is not injective on the line.** -/
 theorem not_injective_lineRule_ofWolfram (n : Fin 256)

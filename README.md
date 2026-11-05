@@ -30,14 +30,22 @@ erase a local perturbation — at every rule where it can, and exactly at rule
   the orbit is eventually zero are exactly a named family; the ones on a ray
   are counted exactly at two speeds and capped by Fibonacci numbers at every
   speed.
+  The single-seed statements hold at the seven other rules agreeing with
+  rule 90 off adjacent cells, whose rays from a single cell are rule 90's.
+  The Fibonacci cap is attained in rate at every speed `(2^m - 1)/(2^m + 1)`.
+  At every speed `1 - 2^-m` the ones are polynomially few.
+  Rule 60 from a single cell is rule 90 sheared, so none of its rays strictly
+  between `0` and `1` is eventually periodic, nor any of its mirror rule 102's.
 - **Erasure of local perturbations.** At 164 of the 256 rules, two
   configurations each of which erases every perturbation of two cells have the
   same successor, at every scale — at some of those rules because no
   configuration erases at all.
 - **Reproduction and self-simulation.** Rule `90` simulates itself by a
   blocking transformation, four rules are rule `90` on doubled configurations,
-  and the quiescent rules that reproduce a pattern without bound number at
-  least fourteen and lie among the 54 that grow.
+  exactly seventeen quiescent rules reproduce a pattern without bound, and
+  rule `106` among them is its own next level under a cell map doubling
+  positions, a level blind to the host's phase within one of its steps, and
+  reproduces every state on the orbit of a pair.
 - **The rule space itself.** The Wolfram number with its two symmetries acting
   on the dynamics, the 88 classes they generate, the permutive rules counted,
   the six rules that are injective, and the 226 shown not surjective.
@@ -629,6 +637,117 @@ statement's number in the library's paper is given where it has one.
   advanced `k` steps is a line
   (`observedRationalRay_f90_iterate_single_eq_line`). *Rule Space*
   Proposition 5.6. Boundary: the single seed and its orbit.
+- **Rule 90's rays at the rules agreeing with it off adjacent cells**
+  (`ParityRays.lean`): from a state of one parity, every rule of
+  `AgreesOffAdjacent` reads rule 90's rays (`OneParity.observedRationalRay_eq_f90`),
+  and the single cell is of one parity (`oneParity_single`), so at the eight
+  rules no single-seed ray strictly between rest and speed one is eventually
+  periodic
+  (`AgreesOffAdjacent.not_eventuallyPeriodic_observedRationalRay_single`, with
+  its witness at rule 18), the zero lines read `0`
+  (`AgreesOffAdjacent.single_apply_zeroLine`), the Fibonacci ceiling holds
+  (`AgreesOffAdjacent.card_ones_observedRationalRay_single_le_fib`) and the
+  zero lines are the only lines reading `0` from some step on
+  (`AgreesOffAdjacent.exists_late_one_single_onLine_iff`). Rule 254, outside
+  the class, fills its light cone and reads `1` along the ray of speed `1/2`
+  (`eventuallyPeriodic_observedRationalRay_wolfram254_single`). *Rule Space*
+  Proposition 5.15. Boundary: the single seed.
+- **The Fibonacci ceiling attained at a class of speeds** (`RationalRayMax.lean`):
+  at speed `(2^m - 1)/(2^m + 1)` rule 90's ray from the single cell, read from cell
+  `0`, reads `1` at step `(2^m + 1) b` whenever `b` and `2^m b` share no binary digit
+  (`observedRationalRay_f90_single_maxSpeed`, with its witness and its guard at a
+  shared digit), so it reads at least `F(L + 2)` ones below step `(2^m + 1) 2^L`
+  (`fib_le_card_ones_observedRationalRay_f90_single_maxSpeed`), the count of
+  numbers with no two adjacent set bits being a private helper. *Rule Space*
+  Proposition 5.16. Boundary: cell `0`, the single seed, a lower bound.
+- **The zero rate at a class of speeds** (`RationalRayZero.lean`): at speed
+  `1 - 2^-m` rule 90's ray from the single cell, read from cell `0`, reads at most
+  `2^m (K + 1)^(m + 1)` ones below step `2^K`
+  (`card_ones_observedRationalRay_f90_single_zeroSpeed_le`), the set bits of each
+  one's pair forming chains whose count is polynomial; at speed `1/3` the ones
+  exceed that bound (`card_ones_observedRationalRay_f90_single_zeroSpeed_le_guard`).
+  *Rule Space* Proposition 5.17. Boundary: cell `0`, the single seed, an upper
+  bound.
+- **Rays of rules 60 and 102** (`ShearRays.lean`): from the single seed rule
+  60 is rule 90 sheared, `60(t, i) = 90(t, 2i - t)` (`f60_single_apply_eq_f90`),
+  and rule 102 is its mirror (`f102MirrorSingle`); so every ray of rule 60 at a
+  speed strictly between rest and one reads a one past every step
+  (`f60LateOnes`) and zero runs of every length past every step
+  (`f60LateZeroRuns`), and is not eventually periodic
+  (`not_eventuallyPeriodic_observedRationalRay_f60_single`, with its witness at
+  speed `1/2`), and so is rule 102's ray toward decreasing cells
+  (`not_eventuallyPeriodic_mirrorRay_f102_single`); the forms taking the ones
+  and the zero runs as hypotheses stay beside them
+  (`not_eventuallyPeriodic_observedRationalRay_f60_single_of`,
+  `not_eventuallyPeriodic_mirrorRay_f102_single_of`). At speed one and
+  at speed zero from cell `0` the ray reads `1` at every step
+  (`eventuallyPeriodic_observedRationalRay_f60_single_one`,
+  `eventuallyPeriodic_observedRationalRay_f60_single_zero`), and the zero-runs
+  condition fails once speed zero is admitted
+  (`not_F60LateZeroRuns_of_zero_speed`). *Rule Space* Proposition 5.18.
+  Boundary: the single seed; Proposition 5.1 alone.
+- **Rays of rule 22** (`Rule22Rays.lean`): from the single seed rule 22 is rule 90 plus, at odd
+  steps, rule 90's previous row (`f22_single_apply_eq_f90`, the odd row of Chan-López and
+  Martín-Ruiz's closed form read on the line, the classical package holding that row), and its
+  orbit is symmetric about the seed (`f22SymmSingle`); a one of rule 90 sits where step and cell
+  share a parity and the added row sits on the other, so every ray of rule 22 at a speed strictly
+  between rest and one reads a one past every step (`f22LateOnes`) and, by the light cone of both
+  rows, zero runs of every length past every step (`f22LateZeroRuns`), and is not eventually
+  periodic toward either side (`not_eventuallyPeriodic_observedRationalRay_f22_single`,
+  `not_eventuallyPeriodic_mirrorRay_f22_single`, with the witness at speed `1/2`); the forms
+  taking the three facts as hypotheses stay beside them
+  (`not_eventuallyPeriodic_observedRationalRay_f22_single_of`,
+  `not_eventuallyPeriodic_mirrorRay_f22_single_of`); at speed one from cell 0 the ray reads 1 at
+  every step (`eventuallyPeriodic_observedRationalRay_f22_single_one`) and at speed zero the
+  column reads 0 from step two (`eventuallyPeriodic_observedRationalRay_f22_single_zero`), where
+  the ones condition fails (`not_F22LateOnes_of_zero_speed`), so both speed bounds are needed.
+- **Rays of rule 126** (`Rule126Rays.lean`): from the single seed rule 126 at every even step
+  `2t` is rule 90's row `t` doubled toward the center, a cell `y >= 0` reading rule 90 at
+  `(y + 1) / 2` and `y < 0` at `y / 2` (`f126_single_two_mul`), so the even steps of a ray of
+  speed `p/q` read a line of rule 90 that is never a zero line and every ray strictly between rest
+  and one reads a one past every step (`exists_late_one_observedRationalRay_f126_single`), every
+  ray from rest to below one reads zero runs of every length past every step (`lateZeroRuns_f126`),
+  and none strictly between is eventually periodic
+  (`not_eventuallyPeriodic_observedRationalRay_f126_single`, with the witness at speed `1/2`); the
+  center column reads 1 at every step `2^j - 1` (`f126_single_apply_zero_two_pow_sub_one`) and is
+  not eventually periodic either (`not_eventuallyPeriodic_observedRationalRay_f126_single_zero`),
+  where rule 90's is; at speed one from cell 0 the ray is eventually periodic
+  (`observedRationalRay_f126_single_guard_one`). *Rule Space* Proposition 5.34. Boundary: the
+  single seed.
+- **Rays of rule 150 above speed one half** (`Rule150Rays.lean`): `2^j` steps of rule 150 read
+  each cell and the two cells `2^j` away (`iterate_two_pow_f150`, at the quiescence `hq150`), so
+  from the single seed the center column reads 1 at every step (`f150_single_apply_zero`) and the
+  column at cell `2^k` reads 1 from step `2^k` to `2^(k+1) - 1` (`f150_single_apply_two_pow`);
+  every ray of speed `p/q` with `p < q < 2p` crosses that column inside the block, so it reads a
+  one past every step (`exists_late_one_observedRationalRay_f150_single`), every ray strictly
+  between rest and one reads zero runs of every length past every step (`lateZeroRuns_f150`), and
+  no ray above speed one half is eventually periodic
+  (`not_eventuallyPeriodic_observedRationalRay_f150_single`, with the witness at speed `2/3`); at
+  speeds zero and one from cell 0 the ray is eventually periodic
+  (`observedRationalRay_f150_single_guard_zero`, `observedRationalRay_f150_single_guard_one`), and
+  the ray of speed `1/2` from cell 1 reads eleven ones below step 16, above rule 90's Fibonacci
+  ceiling of ten (`card_ones_observedRationalRay_f150_single_half_guard`). *Rule Space*
+  Proposition 5.33. Below speed one third every ray meets the right edge of the middle copy of a
+  smaller row at every large dyadic block, reading 1 there
+  (`exists_late_one_observedRationalRay_f150_single_of_three_mul_lt`), so none is eventually periodic
+  (`not_eventuallyPeriodic_observedRationalRay_f150_single_of_three_mul_lt`, with the witness at
+  speed `1/4`), and both ranges are one statement
+  (`not_eventuallyPeriodic_observedRationalRay_f150_single_of_three_mul_lt_or_lt_two_mul`). *Rule
+  Space* Proposition 5.35. At every coprime speed whose denominator is not a power of two, the row at
+  step `2^m - 1` reads 1 exactly where `2^m - abs(x)` is not divisible by 3
+  (`f150_single_two_pow_sub_one`), and the ray's cell at that step misses those ones at every large
+  `m` only when `q` divides a power of two (`exists_two_pow_sub_ray_mod_three_ne`, with the guard
+  `exists_two_pow_sub_ray_mod_three_ne_guard` at speed `7/16`), so the ray reads a one past every step
+  (`exists_late_one_observedRationalRay_f150_single_of_not_pow_two`) and is not eventually periodic
+  (`not_eventuallyPeriodic_observedRationalRay_f150_single_of_not_pow_two`, with the witness at
+  speed `2/5`); the three ranges are one statement
+  (`not_eventuallyPeriodic_observedRationalRay_f150_single_of_coprime`). *Rule Space* Proposition
+  5.36. At the dyadic speeds from one third to one half the row at step `3 * 2^m - 1` is three
+  copies of the row at `2^m - 1` (`f150_single_three_mul_two_pow_sub_one`), which catches the cells
+  the rows `2^k - 1` miss (`exists_late_one_observedRationalRay_f150_single_of_dyadic`), so no ray at
+  any speed strictly between rest and one is eventually periodic
+  (`not_eventuallyPeriodic_observedRationalRay_f150_single_of_lt`, with the witness at speed `7/16`
+  from cell 1). *Rule Space* Proposition 5.37. Boundary: the single seed; Proposition 5.1 alone.
 
 ### Erasure of local perturbations
 
@@ -775,6 +894,350 @@ statement's number in the library's paper is given where it has one.
   changes. Rule 30 admits no map on the even cells carrying its second
   iterate (`not_exists_decim_law_f30`). *Rule Space* Proposition
   5.7.
+- **Rule 90's tower at the other reproducing rules** (`EmulationTower.lean`):
+  the one-parity states of a rule agreeing with rule 90 off adjacent cells,
+  the doubled states of a rule agreeing with it at equal adjacent cells, and
+  the configurations supported in one coset of `4ℤ` at rule 22 are each
+  positively invariant under the rule's `2 ^ M`-th or `2 ^ (M + 1)`-th iterate
+  (`AgreesOffAdjacent.positivelyInvariant_oneParity`,
+  `DoubledAgree.positivelyInvariant_range_dbl`,
+  `positivelyInvariant_supportInCoset_f22`), and decimation at that scale is
+  a semiconjugacy of the iterate onto rule 90 (`AgreesOffAdjacent.semiconj_decim`,
+  `DoubledAgree.semiconj_decim` with its witness at rule 94,
+  `semiconj_decim_f22`), so the tower above each of those eleven rules is
+  rule 90's own; at rule 22 the one-parity class is too big
+  (`not_semiconj_decim_f22_oneParity`). *Rule Space* Proposition 5.10.
+- **What the first level of the tower sees** (`LevelHits.lean`): at rule 90,
+  flipping one cell of any finitely supported configuration leaves the
+  decimated reading of every `k * 2 ^ M`-th iterate unchanged exactly when the
+  cell is off the sampled residue (`decim_iterate_f90_add_single_eq_iff`), and
+  the same holds for a flip keeping the one-parity class of a rule agreeing
+  with rule 90 off adjacent cells and the coset class at rule 22
+  (`AgreesOffAdjacent.decim_iterate_add_single_eq_iff`,
+  `decim_iterate_f22_add_single_eq_iff`, each with its witness); at each of
+  the eleven rules of the tower above, one flip off the class
+  and off the residue is seen at the first level
+  (`decim_iterate_add_single_ne_oneParityHosts`,
+  `decim_iterate_add_single_ne_doubledHosts`,
+  `decim_iterate_f22_add_single_ne`), while a gap-filling flip at rule 18
+  leaves every iterate from one step on unchanged
+  (`finRule_f18_iterate_add_gapFill`). *Rule Space* Proposition 5.11.
+- **Bounded internal gaps exclude reproduction** (`BoundedGaps.lean`):
+  an internal gap is a run of clear cells between two set cells, bounded by `m` in
+  `FiniteConfiguration.GapLe` and runs of set cells in `FiniteConfiguration.OnesLe`, both
+  holding at the support diameter (`FiniteConfiguration.gapLe_diam`,
+  `FiniteConfiguration.onesLe_diam`). At any update of finitely supported configurations, a
+  pattern along whose orbit every internal gap stays at most a bound is not reproduced
+  (`not_reproduces_of_gapLe`, proving `NotReproducesOfGapLe`). One step of a rule keeps every
+  internal gap at most the larger of its bound and 2 whenever three consecutive triples sent to
+  `0` force their middle cells clear (`LocalRule.ThreeZerosClear.gapLe_finRule`, with its
+  witness), and at rules 234 and 248 outside that condition (`gapLe_finRule_wolfram234`,
+  `gapLe_finRule_wolfram248`), which together give it at the 21 rules of `gapClassA`
+  (`gapStepClassA`). No four consecutive triples sent to `1` bounds every run of set cells of an
+  image by 3 (`LocalRule.FourOnesFree.onesLe_finRule`), and four consecutive triples sent to `0`
+  forcing their middle cells equal keeps the gaps at most the larger of their bound and 3
+  (`LocalRule.FourZerosConst.gapLe_finRule`, with its witness), as do rules 28 and 70 outside it
+  (`gapLe_finRule_wolfram28`, `gapLe_finRule_wolfram70`), which give the bound on gaps and runs
+  of set cells at the seven rules of `gapClassB` (`gapStepClassB`). So no rule of `gapClassA` and
+  `gapClassB`, twenty-eight growing rules, reproduces a pattern (`not_reproduces_gapClasses`,
+  through `not_reproduces_of_gapStep`). Two steps on, the first image bounds the second whenever
+  seven constant cells of a second image force the cells beneath them constant
+  (`LocalRule.SevenConstLift.twoStep`, with its witness), which holds at rules 62 and 118
+  (`gapClassC`), so neither reproduces a pattern either (`not_reproduces_gapClassC`). At rules
+  202 and 216 (`gapClassD`) the bound is on the stretches between set cells holding no two
+  adjacent set cells (`FiniteConfiguration.PairFreeLe`, which bounds the gaps by
+  `FiniteConfiguration.PairFreeLe.gapLe` and holds at the diameter by
+  `FiniteConfiguration.pairFreeLe_diam`): no image reads the rule's four-cell word
+  (`FiniteConfiguration.Avoids`; `avoids_finRule_wolfram202`, `avoids_finRule_wolfram216`), and
+  from a state avoiding it one step keeps the bound (`pairFreeLe_finRule_wolfram202`, with its
+  witness, `pairFreeLe_finRule_wolfram216`), so neither rule reproduces a pattern
+  (`not_reproduces_gapClassD`); the quiescent rules reproducing a pattern lie among 22. *Rule
+  Space* Propositions 5.12 to 5.14.
+
+- **The window at a moving end** (`EdgeWindow.lean`): the window of a given width read
+  rightwards from the leftmost set cell (`FiniteConfiguration.leftEnd`,
+  `FiniteConfiguration.leftWindow`). At a quiescent rule sending `001` to `1` the leftmost set
+  cell moves left one cell a step (`FiniteConfiguration.leftEnd_finRule`) and cell `j` of the
+  image's window reads cells `j - 2` to `j` of the state's (`FiniteConfiguration.leftWindow_finRule`,
+  with its witness), so equal windows stay equal (`leftWindowClosed`, proving
+  `LeftWindowClosed`; the hypothesis load-bearing at rule 4 by `not_leftWindowClosed_wolfram4`).
+  At rule 54 every window of width `W` is, from `5 * ((W + 3) / 4)` steps on, a string of the
+  blocks `1000` and `1110`, the two rows of its ether (`EtherBlocks`; `etherBlocksLate54`,
+  proving `EtherBlocksLate54`, by induction over blocks; not yet at step 7 by
+  `not_etherBlocks_early_wolfram54`; `etherBlocks_single_wolfram54` and
+  `not_etherBlocks_single_wolfram30` at the single cell), and copies of a pattern at gap `G`
+  read the pattern's window of width `diam p + G` (`leftWindowCopies`, proving
+  `LeftWindowCopies`, with its witness). So rule 54 reproduces no pattern
+  (`not_reproduces_wolfram54`; `not_reproduces_wolfram54_of_window` takes the three statements
+  as hypotheses), and the quiescent rules reproducing a pattern lie among 21. *Rule Space*
+  Proposition 5.19.
+
+- **The columns at a moving end** (`EdgeColumns.lean`): reading the window at a moving left end
+  column by column, three statements are stated as propositions: the window of a reproduced
+  pattern is purely periodic at every gap (`LeftWindowPeriodic`, proved by `leftWindowPeriodic`,
+  with its witness at rule 90), a family of purely periodic
+  columns obeying the window recurrence at a rule sending `001`, `011` and `100` to `1` with
+  `f a 1 0 = f a 1 1` is narrow (`PeriodicColumnsNarrow`), and reflection carries reproduction to
+  the mirror rule (`ReproducesReflect`). From them such a rule reproduces no pattern
+  (`not_reproduces_of_columns`, its hypotheses meeting at rule 30 by
+  `not_reproduces_of_columns_nonvacuous`), and so do rules 30 and 86
+  (`not_reproduces_wolfram30_of_columns`, `not_reproduces_wolfram86_of_columns`). Each of the four
+  rule conditions is needed by an argument from them alone: rules 60, 18, 26 and 126 each fail one
+  and reproduce a pattern (`exists_reproduces_wolfram60`, `exists_reproduces_wolfram18`,
+  `exists_reproduces_wolfram26`, `exists_reproduces_wolfram126`). The narrowness is proved
+  (`periodicColumnsNarrow`, with its witness at rule 30's window `1100`), so such a rule
+  reproduces no pattern (`not_reproduces_of_bits`) and neither does rule 30
+  (`not_reproduces_wolfram30`); reflection carries reproduction to the mirror rule
+  (`reproducesReflect`, with its witness at rule 60), so rule 86 reproduces no pattern either
+  (`not_reproduces_wolfram86`), and the quiescent rules reproducing a pattern lie among 19.
+  *Rule Space* Proposition 5.20.
+
+- **Bounded column periods at a moving end** (`EdgeFamilies.lean`): every purely periodic family
+  of window cells at a rule having every column of a bounded period (`PeriodicColumnsBounded`), a
+  quiescent rule sending `001` to `1` with `f a b 0 = b` reproduces no pattern
+  (`not_reproduces_of_periodicColumnsBounded`, its rule hypotheses meeting at rule 110 by
+  `not_reproduces_of_periodicColumnsBounded_nonvacuous`), and so do rules 110 and 124 when the bound
+  64 holds at rule 110 (`not_reproduces_wolfram110_of_bounded`,
+  `not_reproduces_wolfram124_of_bounded`). The bound is needed: rule 102 meets the rule hypotheses
+  and reproduces a pattern (`exists_reproduces_wolfram102`).
+
+- **Rule 110's window column families** (`Rule110Families.lean`, `Rule110Bound.lean`): six tables of
+  64-bit column words (`rule110Tables`), each ending in a shift symmetry (`rule110Tails`), with the
+  complement of each column that never merges leading to a listed table (`rule110Siblings`),
+  decided by the kernel, carry every purely periodic window family at rule 110, so every column has
+  a period dividing 64 (`periodicColumnsBounded_wolfram110`, with its witness at every width), and
+  rules 110 and 124 reproduce no pattern (`not_reproduces_wolfram110`, `not_reproduces_wolfram124`):
+  the quiescent rules reproducing a pattern lie among 17. *Rule Space* Proposition 5.21.
+
+- **Rule 106 reproduces a pattern** (`Rule106.lean`): rule 106's window map (`window106`), a cell map
+  doubling positions (`renormCell`, `renorm`, with `renorm_renormCell` and `renorm_pairLattice`), pairs
+  `11` on a lattice of spacing 6 (`pairLattice`) and copies of the pattern `1101` on it
+  (`copiesLattice`), and the full window of a state (`FiniteConfiguration.fullWindow`). From three
+  statements taken as hypotheses — the orbit of the pair renormalizing four steps to one
+  (`Rule106Renorm`), 24 steps doubling a lattice of pairs (`Rule106Step24`), and two steps turning
+  pairs into copies (`Rule106TwoSteps`) — rule 106 reproduces the pattern of cells 0, 1 and 3
+  (`reproduces_wolfram106_of_window`) and rule 120 its reflection
+  (`reproduces_wolfram120_of_window`); the 24th iterate is two copies (`copies_window106_nonvacuous`).
+  Pieces on disjoint blocks whose last two cells stay clear evolve alone (`blockLattice`, `blockStep`,
+  `window106_blockLattice`, `window106_iterate_blockLattice`), which proves the 24 steps
+  (`rule106Step24`, with its witness) and the two steps (`rule106TwoSteps`). On the windows whose
+  runs of two or more set cells start at multiples of 3 (`Rule106Class`), four steps commute with the
+  cell map (`renorm_window106_four`, with its witness; the class needed, by
+  `not_renorm_window106_four_of_offphase`) and the map with up to three steps keeps the class
+  (`rule106Class_renorm_iterate`), so the orbit renormalizes (`rule106Renorm`), and rules 106 and 120
+  reproduce a pattern with no hypothesis left (`reproduces_wolfram106`, `reproduces_wolfram120`).
+
+- **Exactly seventeen rules reproduce a pattern** (`ReproductionClassification.lean`): a quiescent
+  radius-one rule reproduces some pattern without bound exactly when its Wolfram number is one of
+  seventeen (`reproducingNumbers`, `reproduces_iff_mem`, `reproducing_card`), each of them quiescent
+  and growing (`reproducingNumbers_quiescent_growing`), the split of the 54 growing rules decided by
+  the kernel. *Rule Space* Proposition 5.22.
+
+- **Rule 106 is its own next level** (`Rule106Level.lean`): the windows whose runs of two or more
+  set cells start at multiples of 3, cells 0 and 1 free (`Rule106Runs`; `Rule106Class` is this with
+  cells 0 and 1 set, `rule106Class_iff`), and those whose orbit keeps that condition
+  (`Rule106Stays`). One step renormalizes exactly on the condition (`Rule106RenormIff`, proved as
+  `rule106RenormIff`, with `renorm_window106_four_of_runs` and the witness
+  `rule106RenormIff_nonvacuous`), and the cell map with up to three steps keeps it
+  (`Rule106RunsRenorm`, proved as `rule106RunsRenorm`). So four steps commute with the cell map
+  along an orbit exactly when the orbit keeps the condition (`renorm_window106_iterate_iff`), the
+  cell map keeps such orbits (`rule106Stays_renorm`), and `4 ^ m` steps on the `m`-th image are one
+  step below (`renorm_pow_window106_iterate`, with its witness at the pair,
+  `renorm_pow_window106_iterate_nonvacuous`; the pair's orbit keeps the condition,
+  `rule106Stays_pair`), each also stated from the two statements as hypotheses
+  (`renorm_window106_iterate_iff_of`, `rule106Stays_renorm_of`, `renorm_pow_window106_iterate_of`);
+  a window keeping the condition at the start only is not enough (`not_renorm_window106_eight`).
+  *Rule Space* Proposition 5.23.
+
+- **Rule 106 reproduces every state on the orbit of the pair** (`Rule106Patterns.lean`): a window
+  clear from cell `m` is clear from cell `m + 2k` after `k` steps (`window106_iterate_eq_zero`); a
+  state whose full window is a block lattice of another state's piece, at a spacing past its
+  diameter plus `G`, is that many copies of it at gap `G` (`copies_of_fullWindow_blockLattice`); so
+  rule 106 reproduces the state `n` steps from the pair at every `n`
+  (`reproduces_wolfram106_orbit`) and rule 120 the mirror state (`reproduces_wolfram120_orbit`),
+  with its witness at the 27th iterate as two copies of the third
+  (`copies_window106_orbit_nonvacuous`). *Rule Space* Proposition 5.24.
+
+- **Rule 106's level against a hit** (`Rule106Hits.lean`): up to three steps after the cell map,
+  read at the cells it lands on, return the window at every window
+  (`window106_iterate_renorm_renormCell`, four steps too many by
+  `not_window106_four_renorm_renormCell`), so on a staying window the level reads its own state at
+  every host time and every height (`window106_iterate_renorm_pow_renormCell`, the staying
+  hypothesis needed by `not_window106_iterate_renorm_renormCell_eight`); a hit at a cell changes no
+  cell below it and changes the cell at every time (`window106_iterate_add_single`), so a hit on a
+  sampled cell is seen at every step (`window106_iterate_add_single_renormCell_ne`); off the sampled
+  cells (`renormCell_ne_two_five`) the hit at cell 2 on the renormalized successor of the pair, the
+  host one step later, is unseen at every level step (`window106_unseen_hit`), and the hit at cell 5
+  on the renormalized third iterate is seen at level step one (`window106_seen_hit`). *Rule Space*
+  Proposition 5.29.
+
+- **Rule 106's level off its sampled cells is not local** (`Rule106Sight.lean`): the orbit of the
+  pair is clear from cell `12 * 2 ^ a - 3` on through step `32 * 4 ^ a - 7`
+  (`window106_iterate_pair_eq_zero_of_le`, both bounds met at once by
+  `window106_iterate_pair_eq_zero_of_le_nonvacuous`), sharp one step later at `a = 1`
+  (`window106_iterate_pair_sharp`); a window plus a window shifted right by `c` cells (`windowShift`)
+  evolves as the two apart while the first stays clear from cell `c - 2`
+  (`window106_iterate_add_windowShift`); so the hit at cell 2 of the renormalized pair lattice on
+  `{0, 2 ^ a}` is seen at level step `8 * 4 ^ a + 1` (`window106_seen_hit_far`), while at the lone
+  pair, which that window matches on every cell below `12 * 2 ^ a`, the same hit is unseen at every
+  level step (`window106_unseen_hit_pair`, `window106_sight_not_local`). *Rule Space*
+  Proposition 5.38.
+
+- **Rule 106's reproduction reduced to its roots** (`Rule106Roots.lean`, with three statements in
+  `ReproducedPatterns.lean`): at a quiescent rule one-to-one on finitely supported states, a state
+  whose image is reproduced is reproduced (`Reproduces.of_finRule`, witnessed by
+  `Reproduces.of_finRule_nonvacuous`), so a state is reproduced exactly when any of its iterates is
+  (`Reproduces.iterate_iff`), and at every quiescent rule a state periodic up to translation is never
+  reproduced (`Reproduces.not_of_iterate_eq_translate`, with
+  `Reproduces.not_of_iterate_eq_translate_nonvacuous`). At rule 106, one-to-one
+  (`finRule_wolfram106_injective`), the image's leftmost set cell is one left of the state's
+  (`finRule_wolfram106_leftEndpoint`) and its rightmost at most one left of the state's
+  (`finRule_wolfram106_rightEndpoint`), so no state is wider than its image
+  (`FiniteConfiguration.diam_le_diam_finRule_wolfram106`); every nonzero state is an iterate of a
+  state with no predecessor or is periodic up to translation
+  (`exists_notMem_range_or_iterate_eq_translate_wolfram106`), and a nonzero state is reproduced
+  exactly when a state with no predecessor it is an iterate of is (`reproduces_wolfram106_iff_root`,
+  witnessed at the pair by `reproduces_wolfram106_iff_root_nonvacuous`). *Rule Space* Proposition
+  5.39.
+
+- **Rule 106 at the leftmost cell** (`Rule106Leftmost.lean`): with `FiniteConfiguration.dropLeftmost`
+  the state with its leftmost set cell cleared, a predecessor of two states, the second at least
+  three cells right of the first, gives one of the first or of the second cleared
+  (`mem_range_or_dropLeftmost_mem_range_wolfram106`, witnessed by
+  `mem_range_or_dropLeftmost_mem_range_wolfram106_nonvacuous`); so a reproduced state with no
+  predecessor has a predecessor once cleared (`Reproduces.dropLeftmost_mem_range_wolfram106`,
+  witnessed at the pair by `Reproduces.dropLeftmost_mem_range_wolfram106_nonvacuous`, the
+  hypothesis of no predecessor load-bearing at the pair's image,
+  `Reproduces.dropLeftmost_mem_range_wolfram106_root_load_bearing`). A state whose only adjacent
+  set cells are its two rightmost (`FiniteConfiguration.RightPairOnly`) has no predecessor
+  (`FiniteConfiguration.RightPairOnly.notMem_range_wolfram106`) and is reproduced exactly when its
+  diameter is 2 (`FiniteConfiguration.RightPairOnly.reproduces_wolfram106_iff`), the state `1011`
+  not reproduced (`not_reproduces_wolfram106_single_zero_add_single_two_add_single_three`).
+  *Rule Space* Proposition 5.41.
+
+- **Rule 106 at the states its pair's orbit shadows** (`Rule106Shadow.lean`): every set cell of
+  the `k`-fold renormalization of a window lies at a residue `0`, `1` or `3 * 2 ^ (k - 1) + 1`
+  modulo `3 * 2 ^ k` (`renorm_iterate_eq_zero`), so a cell `δ` right of a set cell is clear for
+  `2 ≤ δ` and `δ + 2 ≤ 3 * 2 ^ (k - 1)` (`renorm_iterate_eq_zero_add`, sharp by
+  `renorm_iterate_eq_zero_add_sharp`), and the pair's orbit at the step `4 ^ k * u` is the `k`-fold
+  renormalization of its orbit at the step `u` (`window106_iterate_four_pow_mul_pair`). A state
+  whose window agrees, at every step and every cell past a bound, with the pair's orbit moved some
+  cells right (`FiniteConfiguration.PairShadowed`) is reproduced exactly when its diameter is 2
+  (`FiniteConfiguration.PairShadowed.reproduces_wolfram106_iff`, both sides met by
+  `FiniteConfiguration.PairShadowed.reproduces_wolfram106_iff_nonvacuous`, the shadow load-bearing
+  at the pair's image by `FiniteConfiguration.PairShadowed.reproduces_wolfram106_iff_load_bearing`),
+  the second of several copies read off the full window by `Copies.fullWindow_second_copy`; the
+  states with cells `0, 1, 3, 4, 6, 7`, `0, 1, 3, 4, 9, 10`, `0, 1, 6, 7, 12, 13` and
+  `0, 1, 3, 4, 6, 7, 9, 10, 12, 13` set are shadowed, by a finite certificate
+  (`pairShadowed_wolfram106_cells`), and so are not reproduced (`not_reproduces_wolfram106_cells`).
+  *Rule Space* Proposition 5.42.
+
+- **Rule 106's splice at a lone cell** (`Rule106Splice.lean`): the window of width 11 at an integer
+  position (`pairWindow`); the windows of the pair's orbit lie in six finite lists by the class of
+  the position modulo 6 (`pairWindowLanguage`, `pairWindow_mem_language`), since the window of up to
+  three steps after the cell map is a fixed function of the window before
+  (`renormBits`, `imageWindow`, `pairWindow_window106_iterate_renorm`) and the lists are closed under
+  it (`imageWindow_mem_language`, a kernel-decided computation). So the pair with one more set cell
+  `c` cells right of it, `c % 6 = 3`, has at every step the cells below `c` of the pair's orbit and
+  the cells past `c` of the orbit two steps ahead (`window106_iterate_pair_add_single`, with content
+  by `window106_iterate_pair_add_single_nonvacuous`, the residue not weakened to `c % 3 = 0` by
+  `window106_iterate_pair_add_single_six`); two steps take the chain of `m` pairs three cells apart
+  (`pairChain`) to the pair with one more set cell at `3 * m` (`window106_iterate_two_pairChain`), so
+  the chain's state (`pairChainCells`) is shadowed for odd `m` (`pairShadowed_pairChain`) and not
+  reproduced for odd `m ≥ 3` (`not_reproduces_wolfram106_pairChain`, both sides met by
+  `not_reproduces_wolfram106_pairChain_nonvacuous`). *Rule Space* Proposition 5.43.
+
+- **The lattices of pairs at rule 106** (`Rule106Lattices.lean`): the chain of an odd number of
+  pairs keeps the run condition at every step (`rule106Stays_pairChain`); the cell map carries a
+  shadow, a staying window agreeing with the pair's orbit from a cell `B` on giving its
+  renormalization agreeing from `2 * B + 6` on (`window106_iterate_renorm_eq_of_shadow`, witnessed
+  by `window106_iterate_renorm_eq_of_shadow_nonvacuous`); the renormalization of a chain is the pair
+  lattice of `{0, ..., m - 1}` (`renorm_pairChain`) and six steps from it give the chain of twice its
+  pairs (`window106_iterate_six_pairLattice_range`), so the chain of `2 ^ j * m` pairs is
+  `2 * (4 ^ j - 1)` steps from the `j`-fold renormalization of the chain of `m`
+  (`window106_iterate_renorm_pow_pairChain`). With `pairChainAt k m` the window with a pair at each
+  cell `3 * 2 ^ k * y`, `y < m` (`renorm_iterate_pairChain`, its cells `pairChainAtCells`), the
+  lattice of `m ≥ 1` pairs at the spacing `3 * 2 ^ k` is reproduced exactly when `m` is a power of
+  two (`reproduces_wolfram106_pairChainAt_iff`, both sides met by
+  `reproduces_wolfram106_pairChainAt_iff_nonvacuous`). *Rule Space* Proposition 5.44.
+
+- **Rule 106's left end as an odometer** (`Rule106Odometer.lean`): the window map is the
+  triangular step of the product of cells `j - 2` and `j - 1` (`readBelow106`,
+  `readsBelow_readBelow106`, `window106_eq_triangularStep`), so the classical package's
+  `EdgePeriods` applies: with `prefixPeriod106 w m` the least positive time at which the cells
+  below `m` return, the cells below `m` repeat with it (`window106_iterate_eq_of_add_prefixPeriod106`),
+  the period at width `m + 1` is the period at `m` or twice it
+  (`prefixPeriod106_succ_eq_or_eq_two_mul`), every period is a power of two
+  (`prefixPeriod106_eq_two_pow`), and at a doubling the cell `m` gains one over a period
+  (`window106_iterate_apply_add_prefixPeriod106_of_eq_two_mul`). The copies test: a window
+  agreeing with the start below `m`, differing from it at `m` and reached on the cells below
+  `m + 1` at time `t` forces the doubling at `m + 1` and
+  `t % (2 * prefixPeriod106 w m) = prefixPeriod106 w m` (`prefixPeriod106_succ_eq_two_mul_of_agree`,
+  `mod_two_mul_prefixPeriod106_eq_of_agree`, the three hypotheses met by
+  `mod_two_mul_prefixPeriod106_eq_of_agree_nonvacuous`). *Rule Space* Proposition 5.45; the
+  instance is Rowland's sentence at rule 106 by name (2006, §4), the copies test is stated here.
+
+- **Rule 22 on the patterns of one parity** (`Rule22Parity.lean`): the reduction of a finite
+  configuration, its state read at the even cells (`FiniteConfiguration.reduction`,
+  `FiniteConfiguration.reduction_apply`); from a configuration clear at the odd cells, rule 22 at
+  time `2t` is again clear there and its reduction is rule 146's state `t` steps from the reduction
+  (`finRule_f22_iterate_two_mul_reduction`, the classical package's
+  `Rule22Sparse.iterate_step_rule22_two_mul_reduction`); so such a configuration reproduced by rule
+  22 has a reduction reproduced by rule 146 (`Reproduces.reduction_f146`, witnessed by
+  `Reproduces.reduction_f146_nonvacuous`), a pattern of one parity is reproduced by rule 22 exactly
+  when it is nonzero and lies in one coset of `4ℤ`
+  (`reproduces_f22_iff_supportInCoset_of_oneParity`, the parity load-bearing at the pattern `111`,
+  `reproduces_f22_iff_supportInCoset_of_oneParity_load_bearing`), and a reproduced pattern with an
+  iterate of one parity lies, or its image lies, in one coset of `4ℤ`
+  (`supportInCoset_of_reproduces_f22_of_iterate_oneParity`, witnessed by
+  `supportInCoset_of_reproduces_f22_of_iterate_oneParity_nonvacuous`). *Rule Space* Proposition
+  5.40.
+
+- **A word never created in place, and the patterns it keeps a rule from reproducing**
+  (`NeverCreated.lean`): a state reads a word at a cell, the cells where it does and their number
+  (`FiniteConfiguration.Reads`, `FiniteConfiguration.occurrences`, `FiniteConfiguration.occCount`,
+  `FiniteConfiguration.mem_occurrences`); a rule never creates a word in place when every
+  occurrence in an image sits over one in the state at the same cell
+  (`LocalRule.NeverCreatedInPlace`), and then the number of occurrences never increases
+  (`NeverCreatedInPlace.occurrences_subset`, `NeverCreatedInPlace.occCount_finRule_le`), copies
+  carry it at every gap for a word with set end letters (`occCount_copies`), and the rule
+  reproduces no pattern reading the word (`NeverCreatedInPlace.not_reproduces`, witnessed by
+  `NeverCreatedInPlace.not_reproduces_nonvacuous`); rule 22 never creates `10101` in place,
+  exactly one window of seven cells, `0101010`, having an image reading it at the middle
+  (`neverCreatedInPlace_f22_10101`), so it reproduces no pattern reading `10101`
+  (`not_reproduces_f22_of_reads_10101`), the pattern `110101` among them (`p110101`,
+  `diam_p110101`, `not_reproduces_f22_110101`), whose orbit never meets one parity
+  (`not_oneParity_iterate_f22_110101`); the property fails at rule 90, where `10001` steps to a
+  state reading `10101` twice (`p10001`, `neverCreatedInPlace_f22_10101_load_bearing`); and at a
+  rule with both taps the diameter of a nonzero state grows by two a step
+  (`FiniteConfiguration.diam_finRule_eq_add_two`, `FiniteConfiguration.diam_iterate_finRule`), a
+  nonzero state of one parity has odd diameter (`FiniteConfiguration.OneParity.odd_diam`), so no
+  iterate of a nonzero state of even diameter is of one parity
+  (`not_oneParity_iterate_of_even_diam`, at rule 22 `not_oneParity_iterate_f22_of_even_diam`),
+  both taps load-bearing at rules 4, 16 and 2 (`diam_finRule_eq_add_two_load_bearing`). *Rule
+  Space* Proposition 5.46.
+
+- **A count with a potential certificate never increases, and excludes reproduction**
+  (`PotentialCount.lean`): the window of `W` cells from a cell, the cells whose window meets the
+  support, and the additive local count of a weight on the windows (`FiniteConfiguration.window`,
+  `FiniteConfiguration.windowSites`, `FiniteConfiguration.localCount`,
+  `FiniteConfiguration.localCount_eq_sum`); the middle, first and last cells of a window of `W +
+  2` cells and the rule at its middle (`windowMiddle`, `windowTail`, `windowHead`,
+  `LocalRule.imageMiddle`); a potential certificate, an integer weight on the windows of `W + 1`
+  cells with the certificate inequality at every window of `W + 2` cells
+  (`LocalRule.PotentialCert`), which makes the count never increase in one step
+  (`PotentialCert.localCount_finRule_le`); copies at a gap of at least `W - 1` carry the count
+  (`localCount_copies`, the gap load-bearing at `localCount_copies_gap_load_bearing`); the
+  exclusion with the copies bound asked from a gap on (`not_reproduces_of_count_mono_gap`), so a
+  rule with a certificate reproduces no pattern of positive count (`PotentialCert.not_reproduces`,
+  witnessed by `PotentialCert.not_reproduces_nonvacuous`); at rule 22 two weights of width 9 with
+  certificates decided over the 2048 windows (`phiA`, `piA`, `potentialCert_f22_phiA`; `phiB`,
+  `piB`, `potentialCert_f22_phiB`) exclude the patterns `101101` and `1011001` (`p101101`,
+  `localCount_phiA_p101101`, `not_reproduces_f22_101101`, `p101101_not_reads_10101`,
+  `diam_p101101`; `p1011001`, `localCount_phiB_p1011001`, `not_reproduces_f22_1011001`,
+  `p1011001_not_reads_10101`), neither reading `10101`; the certificate fails at rule 90, where
+  `1001` steps to `101101` and the first count rises (`p1001`,
+  `potentialCert_f22_phiA_load_bearing`). *Rule Space* Proposition 5.47.
 
 - **Rule 90 at half speed on doubled states** (`Doubling.lean`): writing each
   cell twice (`dbl`), every quiescent rule agreeing with rule 90 on the six
@@ -785,6 +1248,90 @@ statement's number in the library's paper is given where it has one.
   (`card_doubledAgree`, `doubledAgree_cases`): 90, 94, 122 and 126. Rule 22
   does not, and two of its steps break a doubled state (`not_doubled_f22`).
   *Rule Space* Proposition 5.8.
+- **Every pattern of a mechanism's class is reproduced** (`ReproducedPatterns.lean`): the identities
+  behind the fifteen reproducing rules other than 106 and 120 hold at every state of their class, so
+  a linear rule reproduces every nonzero pattern (`LinearTaps.reproduces_of_ne_zero`, by the
+  classical package's Frobenius identity), a rule agreeing with rule 90 off adjacent cells every
+  nonzero one-parity pattern (`AgreesOffAdjacent.reproduces_of_oneParity`), a rule agreeing with it
+  at equal adjacent cells every doubled nonzero pattern (`DoubledAgree.reproduces_dbl`), and rule 22
+  every nonzero pattern supported in one coset of `4ℤ` (`reproduces_f22_of_supportInCoset`), each
+  with a witness at a fixed rule and pattern (*Rule Space* Proposition 5.25); and the reproduced set
+  is closed under the rule and under translation: a quiescent rule on copies at gap at least two is
+  the same copies of the image at gap two less (`finRule_copies`, the gap load-bearing at rule 18,
+  `finRule_copies_gap_load_bearing`), so a reproduced pattern's image is nonzero and reproduced
+  (`Reproduces.finRule_ne_zero`, `Reproduces.step`), as is every state on its orbit
+  (`Reproduces.iterate`) and every translate (`Reproduces.translate`), and rule 22 reproduces every
+  state on the orbit of a coset pattern (`reproduces_f22_iterate_of_supportInCoset`). *Rule Space*
+  Proposition 5.26.
+
+- **Two defect counts, and the patterns a rule cannot reproduce** (`DefectCounts.lean`): the kink
+  count of a state is the number of its set cells whose next set cell lies at odd distance
+  (`kinkCount`, the kinks of Sabrié and Törmä after Kůrka), zero exactly on the one-parity states
+  (`kinkCount_eq_zero_iff`), and the odd-run count is the kink count of the boundary state
+  (`boundary`, `oddRunCount`), zero exactly on the translates of a doubled state
+  (`oddRunCount_eq_zero_iff`); a count that one step never increases and that `k` copies at a
+  positive gap carry at least `k` times excludes the reproduction of every pattern of positive
+  count (`not_reproduces_of_count_mono`, with a fixed instance meeting its hypotheses and the
+  support cardinality as such a count, `card_support_copies_le`); so under the monotonicity of the
+  kink count and its copies bound, stated as the hypotheses `KinkCountMono` and `KinkCountCopies`,
+  a rule agreeing with rule 90 off adjacent cells reproduces exactly the nonzero one-parity
+  patterns (`AgreesOffAdjacent.reproduces_iff_oneParity`), and under the odd-run count's
+  (`OddRunCountMono`, `OddRunCountCopies`) a rule agreeing with it at equal adjacent cells exactly
+  the nonzero translates of doubled patterns (`DoubledAgree.reproduces_iff_dbl`); the positive gap
+  is load-bearing in the odd-run bound (`oddRunCountCopies_gap_load_bearing`). The two copies
+  bounds are proved (`kinkCountCopies`, `oddRunCountCopies`); the two monotonicities are stated
+  here and proved in `KinkMonotone.lean` at six rules and in `OddRunMonotone.lean` at rule 126.
+- **The kink count never increases at six rules** (`KinkMonotone.lean`): the kink count of a
+  state is the number of kinks of its configuration in the classical package's sense
+  (`kinkCount_eq_kinks`), so a rule agreeing with rule 90 off adjacent cells that sends at most
+  one of `011` and `110` to one never increases it (`AgreesOffAdjacent.kinkCountMono`, by the
+  classical package's `Rule18Kinks.kinks_step_le_of_agree`; rule 18's instance is Sabrié and
+  Törmä's proposition), six rules in all (`card_agreesOffAdjacent_atMostOne`): 18, 26, 82, 146,
+  154 and 210 (`kinkCountMono_f18` to `kinkCountMono_f210`), while rules 218 and 90 create kinks
+  (`not_kinkCountMono_f218`, `not_kinkCountMono_f90`); so at those six rules the patterns
+  reproduced are exactly the nonzero one-parity patterns
+  (`AgreesOffAdjacent.reproduces_iff_oneParity_of_atMostOne`, `reproduces_iff_oneParity_f18` to
+  `reproduces_iff_oneParity_f210`), the iff theorem's hypotheses met at once at rule 18
+  (`AgreesOffAdjacent.reproduces_iff_oneParity_nonvacuous`).
+- **The odd-run count never increases at rule 126** (`OddRunMonotone.lean`): rule 126 sets a cell
+  exactly when its three cells are not all equal, so its image is the state's boundary set
+  dilated by one cell (`dilate`, `finRule_f126_apply_boundary`), and dilating a state does not
+  increase the kink count of its boundary (`kinkCount_boundary_dilate_le`): a kink of the dilated
+  boundary is sent to the pair of set cells enclosing a clear stretch or to the first adjacent
+  pair inside a run; so rule 126 never increases the odd-run count (`oddRunCountMono_f126`),
+  while rules 94 and 122 do (`not_oddRunCountMono_f94`, `not_oddRunCountMono_f122`), and at
+  rule 126 the patterns reproduced are exactly the nonzero translates of doubled patterns
+  (`reproduces_iff_dbl_f126`), the iff theorem's hypotheses met at once there
+  (`DoubledAgree.reproduces_iff_dbl_nonvacuous`).
+
+- **Rule 218 reproduces exactly the one-parity patterns** (`Rule218Columns.lean`): a family of
+  window cells obeying rule 218's recurrence below a width, purely periodic, its first cell set
+  and a clear cell at step 0, has every odd cell clear at step 0
+  (`PeriodicColumnsOddClear218`, proved as `periodicColumnsOddClear218`, the hypotheses met at
+  once by `periodicColumnsOddClear218_nonvacuous` and the clear cell needed by
+  `not_periodicColumnsOddClear218_without_clear`); with the periodicity of windows under
+  reproduction, rule 218 reproduces a pattern exactly when it is nonzero and of one parity
+  (`reproduces_iff_oneParity_f218`, from the column statement as hypothesis
+  `reproduces_iff_oneParity_f218_of`). *Rule Space* Proposition 5.30.
+- **Rule 94 reproduces exactly the doubled patterns** (`Rule94Columns.lean`): a family of window
+  cells obeying rule 94's recurrence below a width, purely periodic, its first cell set and its
+  last two cells clear at step 0, has the cells `2k` and `2k + 1` equal at step 0
+  (`PeriodicColumnsPaired94`, proved as `periodicColumnsPaired94` by an induction over the pairs,
+  the hypotheses met at once by `periodicColumnsPaired94_nonvacuous` and the second clear cell
+  needed by `not_periodicColumnsPaired94_one_clear`); with the periodicity of windows under
+  reproduction, rule 94 reproduces a pattern exactly when it is a nonzero translate of a doubled
+  pattern (`reproduces_iff_dbl_f94`, from the column statement as hypothesis
+  `reproduces_iff_dbl_f94_of`). *Rule Space* Proposition 5.31.
+- **Rule 122 reproduces exactly the doubled patterns** (`Rule122Columns.lean`): a family of
+  window cells obeying rule 122's recurrence below a width, purely periodic, its first cell set at
+  step 0, is at step 0 a run of pairs `10`, a set even cell and then equal pairs
+  (`PeriodicColumnsPaired122`, proved as `periodicColumnsPaired122` by an induction over the
+  pairs, the hypotheses met at once by `periodicColumnsPaired122_nonvacuous` and pure periodicity
+  needed by `not_periodicColumnsPaired122_without_period`); reading the windows at both ends
+  through reflection, rule 122 reproduces a pattern exactly when it is a nonzero translate of a
+  doubled pattern (`reproduces_iff_dbl_f122`, from the column statement as hypothesis
+  `reproduces_iff_dbl_f122_of`). *Rule Space* Proposition 5.32.
+
 - **The reproduction bracket** (`ReproductionBracket.lean`): a state is `k`
   copies of a pattern at gap `G` when it is the sum of `k` translates whose
   offsets step by at least the pattern's diameter plus `G` (`Copies`), and a
@@ -796,13 +1343,21 @@ statement's number in the library's paper is given where it has one.
   (`copies_diam_le`, `not_reproduces_of_diamBounded`); every quiescent rule
   outside the 54 growing ones has bounded diameter from the
   per-rule bounds (`classify_outside_growing`,
-  `diamBounded_of_not_growing`); and fourteen rules reproduce a pattern
-  (`fourteen`, `reproduces_of_mem_fourteen`) — the linear rules a single
+  `diamBounded_of_not_growing`); and fifteen rules reproduce a pattern
+  (`fifteen`, `reproduces_of_mem_fifteen`) — the linear rules a single
   cell by a squaring identity (`LinearTaps`, `LinearTaps.reproduces`), the
   seven agreeing with rule 90 off adjacent cells the two cells at distance
-  two (`AgreesOffAdjacent.reproduces`), and the three doubled-agreement
+  two (`AgreesOffAdjacent.reproduces`), the three doubled-agreement
   rules the adjacent pair (`DoubledAgree.reproduces`), each with a fixed
-  instance. *Rule Space* Proposition 5.9. Boundary:
+  instance, and rule 22 a single cell (`reproduces_f22_single`): on a
+  configuration supported in one coset of `4ℤ` its even iterates are rule
+  90's (`finRule_f22_iterate_two_mul_eq_f90`, the instance of the classical
+  package's `Rule22Sparse`, after Chan-López and Martín-Ruiz 2026), and a
+  map reproduces a pattern when its second iterate does
+  (`Reproduces.of_iterate_two`). The rules carrying that mechanism are
+  exactly the eight agreeing with rule 90 off adjacent cells and rule 22
+  (`iterate_two_eq_f90_on_coset_iff`, `card_iterate_two_eq_f90_on_coset`).
+  *Rule Space* Proposition 5.9. Boundary:
   neither end of the bracket is shown exact; three patterns only.
 
 ## Scope, and related formalizations
@@ -839,9 +1394,10 @@ right diagonal is periodic; no statement of this library was found in any
 prover.
 
 A preprint read on 2026-10-13, Chan-López and Martín-Ruiz (2026), gives rule
-22's rows from a single cell in closed form, from which rule 22 reproduces a
-single cell; that is not proved here, and the reproduction bracket's fourteen
-do not include it. Corrections are welcome as issues.
+22's rows from a single cell in closed form; the classical package carries
+that form on every configuration supported in one coset of `4ℤ`, and the
+reproduction bracket's fifteen include rule 22 by it. Corrections are
+welcome as issues.
 
 What is not here: Wolfram's four classes, which are not a formal notion; rules
 of wider radius or more states; and the surjectivity of the permutive rules, a
@@ -860,7 +1416,7 @@ library content the paper does not state.
 
 - No `sorry`, `admit`, or `native_decide`; standard axioms only
   (`propext`, `Classical.choice`, `Quot.sound`).
-- **Build-enforced axiom hygiene**: 520 `#guard_msgs in #print axioms` guards
+- **Build-enforced axiom hygiene**: 919 `#guard_msgs in #print axioms` guards
   assert each capstone's exact axiom set — most in the audit modules
   `Nonautonomous/AxiomAudit.lean` and `ECA/AxiomAudit.lean`, the
   rest in-file in the modules they certify; `lake build` fails on any drift.

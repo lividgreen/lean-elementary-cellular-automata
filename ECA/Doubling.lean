@@ -84,28 +84,31 @@ def f126 : LocalRule := wolframRule 126
 /-- Rule `22`. -/
 def f22 : LocalRule := wolframRule 22
 
+/-- Rule `94` is quiescent. -/
 theorem hq94 : f94 0 0 0 = 0 := by decide
+/-- Rule `122` is quiescent. -/
 theorem hq122 : f122 0 0 0 = 0 := by decide
+/-- Rule `126` is quiescent. -/
 theorem hq126 : f126 0 0 0 = 0 := by decide
 theorem hq22 : f22 0 0 0 = 0 := by decide
 
 /-- Rule `94`, its eight values `f 0 0 0 … f 1 1 1` in Wolfram's bit order. -/
-theorem f94_values :
+private theorem f94_values :
     f94 0 0 0 = 0 ∧ f94 0 0 1 = 1 ∧ f94 0 1 0 = 1 ∧ f94 0 1 1 = 1 ∧
       f94 1 0 0 = 1 ∧ f94 1 0 1 = 0 ∧ f94 1 1 0 = 1 ∧ f94 1 1 1 = 0 := by decide
 
 /-- Rule `122`, its eight values in Wolfram's bit order. -/
-theorem f122_values :
+private theorem f122_values :
     f122 0 0 0 = 0 ∧ f122 0 0 1 = 1 ∧ f122 0 1 0 = 0 ∧ f122 0 1 1 = 1 ∧
       f122 1 0 0 = 1 ∧ f122 1 0 1 = 1 ∧ f122 1 1 0 = 1 ∧ f122 1 1 1 = 0 := by decide
 
 /-- Rule `126`, its eight values in Wolfram's bit order. -/
-theorem f126_values :
+private theorem f126_values :
     f126 0 0 0 = 0 ∧ f126 0 0 1 = 1 ∧ f126 0 1 0 = 1 ∧ f126 0 1 1 = 1 ∧
       f126 1 0 0 = 1 ∧ f126 1 0 1 = 1 ∧ f126 1 1 0 = 1 ∧ f126 1 1 1 = 0 := by decide
 
 /-- Rule `22`, its eight values in Wolfram's bit order. -/
-theorem f22_values :
+private theorem f22_values :
     f22 0 0 0 = 0 ∧ f22 0 0 1 = 1 ∧ f22 0 1 0 = 1 ∧ f22 0 1 1 = 0 ∧
       f22 1 0 0 = 1 ∧ f22 1 0 1 = 0 ∧ f22 1 1 0 = 0 ∧ f22 1 1 1 = 0 := by decide
 

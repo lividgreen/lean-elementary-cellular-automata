@@ -746,8 +746,8 @@ theorem FiniteConfiguration.StartsOneOne.finRule_min' (h1 : f 0 0 1 = 0) (h2 : f
 
 /-- **The left end-word is `U`-invariant**, the mirror of `FiniteConfiguration.endsOneOne_finRule`.
 -/
-theorem FiniteConfiguration.startsOneOne_finRule (h1 : f 0 0 1 = 0) (h2 : f 0 1 1 = 1) (h3 : f 1 1 0
-  = 1)
+private theorem FiniteConfiguration.startsOneOne_finRule (h1 : f 0 0 1 = 0) (h2 : f 0 1 1 = 1)
+    (h3 : f 1 1 0 = 1)
     (h4 : f 1 1 1 = 1) {s : FiniteConfiguration} (hs : StartsOneOne s) :
     StartsOneOne (finRule f hq s) := by
   have hne : s.support.Nonempty := startsOneOne_ne_zero hs |> Finsupp.support_nonempty_iff.mpr
@@ -775,7 +775,7 @@ theorem FiniteConfiguration.startsOneOne_finRule (h1 : f 0 0 1 = 0) (h2 : f 0 1 
 
 /-- **The left end-word is translation-invariant**, the mirror of
 `FiniteConfiguration.endsOneOne_translate`. -/
-theorem FiniteConfiguration.startsOneOne_translate {i : ℤ} {s : FiniteConfiguration} (h :
+private theorem FiniteConfiguration.startsOneOne_translate {i : ℤ} {s : FiniteConfiguration} (h :
   StartsOneOne s) :
     StartsOneOne (translate i s) := by
   obtain ⟨hne, hval⟩ := h
@@ -1216,11 +1216,11 @@ def f90 : LocalRule := fun a _b c => a + c
 def f150 : LocalRule := fun a b c => a + b + c
 
 theorem growsByEndpoints_f90 : GrowsByEndpoints f90 := by decide
-theorem growsByEndpoints_f150 : GrowsByEndpoints f150 := by decide
+private theorem growsByEndpoints_f150 : GrowsByEndpoints f150 := by decide
 theorem growsByEndpoints_f30 : GrowsByEndpoints f30 := by decide
-theorem growsByEndpoints_f210 : GrowsByEndpoints f210 := by decide
-theorem growsByEndpoints_f86 : GrowsByEndpoints f86 := by decide
-theorem growsByEndpoints_f154 : GrowsByEndpoints f154 := by decide
+private theorem growsByEndpoints_f210 : GrowsByEndpoints f210 := by decide
+private theorem growsByEndpoints_f86 : GrowsByEndpoints f86 := by decide
+private theorem growsByEndpoints_f154 : GrowsByEndpoints f154 := by decide
 
 theorem zeroByEndpoints_f170 : ZeroByEndpoints f170 := by decide
 theorem zeroByEndpoints_f240 : ZeroByEndpoints f240 := by decide

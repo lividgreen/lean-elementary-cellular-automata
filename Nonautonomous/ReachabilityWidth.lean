@@ -512,7 +512,7 @@ private theorem mergeFiber_nat_succ_encard (Ω : ℕ → Set ℕ) (t : ℕ) :
 Proposition 2.7(ii)): `Ω t = {n | n ≤ t}` presents the successor system with unboundedly many
 represented classes (`t + 1` at time `t`) whose width is nonetheless `1` throughout — the slow
 clock. -/
-theorem width_nat_succ_slow_clock (t : ℕ) :
+private theorem width_nat_succ_slow_clock (t : ℕ) :
     width Nat.succ (fun t => Set.Iic t) t = 1 :=
   width_nat_succ_eq_one ⟨0, Set.mem_Iic.mpr (Nat.zero_le t)⟩
 

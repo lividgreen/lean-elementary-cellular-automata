@@ -3,6 +3,7 @@ module
 public import ECA.ParityEmulation
 public import ECA.Doubling
 public import ECA.BlockCount
+public import ErgodicTheory.Rule22Sparse
 
 /-!
 # The reproduction bracket over the quiescent radius-one rules
@@ -19,20 +20,20 @@ copies at gap `G`: copies without bound in number and in gap.
 The bracket sits on the diameter classes of [RuleSpace] §3: at the seventy-four quiescent rules
 outside the fifty-four growing ones (`LocalRule.GrowsByEndpoints`, with rules `106` and `120`) every
 orbit has bounded diameter, and a map of bounded diameter reproduces no pattern. The other half,
-that each of fourteen rules reproduces some pattern, is the third hypothesis of the main
-statement and is proved below by three mechanisms, so the bracket stands unconditionally.
+that each of fifteen rules reproduces some pattern, is the third hypothesis of the main
+statement and is proved below by four mechanisms, so the bracket stands unconditionally.
 
 ## Main results
 
 * `Copies` / `Reproduces` / `DiamBounded` — the three notions; `ReproducesExactly` is the
   exact-count form, kept as the guards' object.
-* `fourteen` — the fourteen rules, among them the six defined here (`f26`, `f60`, `f82`, `f102`,
-  `f146`, `f218`).
+* `fifteen` — the fifteen rules, among them the six defined here (`f26`, `f60`, `f82`, `f102`,
+  `f146`, `f218`), with rule `22` appended last.
 * `reproduction_bracket` — **the main statement**, from three hypotheses: bounded diameter forbids
   reproduction (`NotReproducesOfDiamBounded`), the seventy-four rules outside the growing
-  fifty-four have bounded diameter (`DiamBoundedOfNotGrowing`), and each of the fourteen
-  reproduces a pattern (`ReproducesOfMemFourteen`).
-* `fourteen_subset_growing` — the lower half is not vacuous: all fourteen are growing.
+  fifty-four have bounded diameter (`DiamBoundedOfNotGrowing`), and each of the fifteen
+  reproduces a pattern (`ReproducesOfMemFifteen`).
+* `fifteen_subset_growing` — the lower half is not vacuous: all fifteen are growing.
 * `copies_diam_le` / `not_reproduces_of_diamBounded` — **the first hypothesis, proved**: `k`
   copies of a nonzero pattern have diameter at least `k` times the pattern's.
 * `classify_outside_growing` / `LocalRule.ZeroByEndpoints.diamBounded` /
@@ -48,7 +49,14 @@ statement and is proved below by three mechanisms, so the bracket stands uncondi
   squaring identity of the linear rules `60`, `90`, `102`, `150`; the doubling identity of rule `90`
   over one-parity states at the seven rules agreeing with it off adjacent cells; and the doubling of
   rule `90`'s orbits at the rules agreeing with it at equal adjacent cells.
-  `reproduces_of_mem_fourteen` collects the fourteen instances.
+  A fourth mechanism, in its own section: rule `22` from configurations supported in one coset of
+  `4ℤ` is rule `90` at even times (`Rule22Sparse.iterate_step_rule22_two_mul_eq_rule90`,
+  Chan-López and Martín-Ruiz 2026, §3), whence `finRule_f22_iterate_two_mul_eq_f90`,
+  `Reproduces.of_iterate_two` and `reproduces_f22_single` ([RuleSpace] §5 Proposition 5.9).
+  `iterate_two_eq_f90_on_coset_iff` — the quiescent rules carrying that mechanism, whose two steps
+  on every such configuration are rule `90`'s, are the eight agreeing with rule `90` off adjacent
+  cells and rule `22`: nine (`card_iterate_two_eq_f90_on_coset`).
+  `reproduces_of_mem_fifteen` collects the fifteen instances.
 -/
 
 @[expose] public section
@@ -117,10 +125,10 @@ theorem hq146 : f146 0 0 0 = 0 := by decide
 /-- Rule `218` is quiescent. -/
 theorem hq218 : f218 0 0 0 = 0 := by decide
 /-- Rule `120` is quiescent. -/
-theorem hq120 : f120 0 0 0 = 0 := by decide
+private theorem hq120 : f120 0 0 0 = 0 := by decide
 
 /-- The six new rules and rule `120` are the rules of their Wolfram numbers. -/
-theorem new_rules_eq_wolframRule :
+private theorem new_rules_eq_wolframRule :
     (∀ a b c, f26 a b c = wolframRule 26 a b c) ∧
       (∀ a b c, f60 a b c = wolframRule 60 a b c) ∧
       (∀ a b c, f82 a b c = wolframRule 82 a b c) ∧
@@ -131,15 +139,15 @@ theorem new_rules_eq_wolframRule :
   decide
 
 /-- Rule `120` is the mirror of rule `106`. -/
-theorem f120_eq_mirrorRule_f106_apply :
+private theorem f120_eq_mirrorRule_f106_apply :
     ∀ a b c, f120 a b c = mirrorRule f106 a b c := by
   decide
 
-/-- **The fourteen rules**: Wolfram numbers `18`, `26`, `60`, `82`, `90`, `94`, `102`, `122`,
-`126`, `146`, `150`, `154`, `210`, `218`. -/
-def fourteen : List LocalRule :=
+/-- **The fifteen rules**: Wolfram numbers `18`, `22`, `26`, `60`, `82`, `90`, `94`, `102`, `122`,
+`126`, `146`, `150`, `154`, `210`, `218`; rule `22` is appended last. -/
+def fifteen : List LocalRule :=
   [f18, f26, f60, f82, f90, f94, f102, f122,
-    f126, f146, f150, f154, f210, f218]
+    f126, f146, f150, f154, f210, f218, f22]
 
 /-- **Leaf: bounded diameter forbids reproduction.** -/
 def NotReproducesOfDiamBounded : Prop :=
@@ -150,25 +158,25 @@ def DiamBoundedOfNotGrowing : Prop :=
   ∀ (f : LocalRule) (hq : f 0 0 0 = 0),
     ¬ (GrowsByEndpoints f ∨ f = f106 ∨ f = f120) → DiamBounded (finRule f hq)
 
-/-- **Leaf: each of the fourteen rules reproduces a pattern.** -/
-def ReproducesOfMemFourteen : Prop :=
-  ∀ f (hq : f 0 0 0 = 0), f ∈ fourteen → ∃ p, Reproduces (finRule f hq) p
+/-- **Leaf: each of the fifteen rules reproduces a pattern.** -/
+def ReproducesOfMemFifteen : Prop :=
+  ∀ f (hq : f 0 0 0 = 0), f ∈ fifteen → ∃ p, Reproduces (finRule f hq) p
 
-/-- **The reproduction bracket**: the fourteen rules reproduce a pattern, and no rule outside
+/-- **The reproduction bracket**: the fifteen rules reproduce a pattern, and no rule outside
 the growing fifty-four does. -/
 theorem reproduction_bracket (h1 : NotReproducesOfDiamBounded) (h2 : DiamBoundedOfNotGrowing)
-    (h3 : ReproducesOfMemFourteen) (f : LocalRule) (hq : f 0 0 0 = 0) :
-    (f ∈ fourteen → ∃ p, Reproduces (finRule f hq) p) ∧
+    (h3 : ReproducesOfMemFifteen) (f : LocalRule) (hq : f 0 0 0 = 0) :
+    (f ∈ fifteen → ∃ p, Reproduces (finRule f hq) p) ∧
     (¬ (GrowsByEndpoints f ∨ f = f106 ∨ f = f120) →
       ∀ p, ¬ Reproduces (finRule f hq) p) :=
   ⟨h3 f hq, fun h p => h1 _ (h2 f hq h) p⟩
 
-/-- **The lower half is not vacuous**: every one of the fourteen rules grows. -/
-theorem fourteen_subset_growing : ∀ f ∈ fourteen, GrowsByEndpoints f := by
+/-- **The lower half is not vacuous**: every one of the fifteen rules grows. -/
+theorem fifteen_subset_growing : ∀ f ∈ fifteen, GrowsByEndpoints f := by
   intro f hf
-  simp only [fourteen, List.mem_cons, List.not_mem_nil, or_false] at hf
+  simp only [fifteen, List.mem_cons, List.not_mem_nil, or_false] at hf
   rcases hf with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl <;>
+      rfl | rfl <;>
     unfold GrowsByEndpoints <;> decide
 
 /-! ## Bounded diameter forbids reproduction -/
@@ -290,17 +298,17 @@ theorem not_reproduces_of_diamBounded : NotReproducesOfDiamBounded := by
 /-! ## Outside the growing rules every orbit has bounded diameter -/
 
 /-- An affine bound along every orbit is a bounded diameter. -/
-theorem diamBounded_of_affine {U : FiniteConfiguration → FiniteConfiguration} {a b : ℕ}
+private theorem diamBounded_of_affine {U : FiniteConfiguration → FiniteConfiguration} {a b : ℕ}
     (h : ∀ (s : FiniteConfiguration) (k : ℕ), diam (U^[k] s) ≤ a * diam s + b) : DiamBounded U :=
   fun s => ⟨a * diam s + b, fun t => h s t⟩
 
 /-- A diameter that grows by at most a constant is a bounded diameter. -/
-theorem diamBounded_of_diamBoundedBy {U : FiniteConfiguration → FiniteConfiguration} {c : ℕ}
+private theorem diamBounded_of_diamBoundedBy {U : FiniteConfiguration → FiniteConfiguration} {c : ℕ}
     (h : DiamBoundedBy U c) : DiamBounded U :=
   fun s => ⟨diam s + c, fun t => h s t⟩
 
 /-- A non-increasing diameter is a bounded diameter. -/
-theorem diamBounded_of_step_le {U : FiniteConfiguration → FiniteConfiguration}
+private theorem diamBounded_of_step_le {U : FiniteConfiguration → FiniteConfiguration}
     (h : ∀ s, diam (U s) ≤ diam s) : DiamBounded U := fun s =>
   ⟨diam s, fun t => by
     induction t with
@@ -712,7 +720,7 @@ def LocalRule.LinearTaps (f : LocalRule) : Prop :=
   ∃ α β γ : ZMod 2, 2 ≤ α.val + β.val + γ.val ∧ ∀ a b c, f a b c = α * a + β * b + γ * c
 
 namespace LocalRule
-instance (f : LocalRule) : Decidable (LinearTaps f) := by
+private instance (f : LocalRule) : Decidable (LinearTaps f) := by
   unfold LinearTaps; infer_instance
 end LocalRule
 
@@ -723,27 +731,12 @@ private theorem iterate_two_pow_linear {f : LocalRule}
     {hq : f 0 0 0 = 0} {α β γ : ZMod 2} (hf : ∀ a b c, f a b c = α * a + β * b + γ * c) :
     ∀ (M : ℕ) (s : FiniteConfiguration) (i : ℤ),
       ((finRule f hq)^[2 ^ M] s) i = α * s (i - 2 ^ M) + β * s i + γ * s (i + 2 ^ M) := by
-  intro M
-  induction M with
-  | zero =>
-    intro s i
-    rw [pow_zero, Function.iterate_one, finRule_apply, hf]
-    simp
-  | succ M ih =>
-    intro s i
-    have hiter : (2 : ℕ) ^ (M + 1) = 2 ^ M + 2 ^ M := by rw [pow_succ]; ring
-    have hpow : (2 : ℤ) ^ (M + 1) = (2 : ℤ) ^ M + (2 : ℤ) ^ M := by rw [pow_succ]; ring
-    rw [hiter, Function.iterate_add_apply, ih ((finRule f hq)^[2 ^ M] s) i,
-      ih s (i - (2 : ℤ) ^ M), ih s i, ih s (i + (2 : ℤ) ^ M)]
-    have e1 : i - (2 : ℤ) ^ M - (2 : ℤ) ^ M = i - (2 : ℤ) ^ (M + 1) := by rw [hpow]; ring
-    have e2 : i - (2 : ℤ) ^ M + (2 : ℤ) ^ M = i := by ring
-    have e3 : i + (2 : ℤ) ^ M - (2 : ℤ) ^ M = i := by ring
-    have e4 : i + (2 : ℤ) ^ M + (2 : ℤ) ^ M = i + (2 : ℤ) ^ (M + 1) := by rw [hpow]; ring
-    rw [e1, e2, e3, e4]
-    have hc : ∀ α β γ x y z u v : ZMod 2, α * (α * x + β * y + γ * z) +
-        β * (α * y + β * z + γ * u) + γ * (α * z + β * u + γ * v) = α * x + β * z + γ * v := by
-      decide
-    exact hc α β γ _ _ _ _ _
+  intro M s i
+  have hfun : f = fun a b c => α * a + β * b + γ * c :=
+    funext fun a => funext fun b => funext fun c => hf a b c
+  refine (congrFun (coe_finRule_iterate f hq (2 ^ M) s) i).trans ?_
+  rw [hfun]
+  exact LocalRuleColumns.iterate_two_pow_step_linear α β γ M ⇑s i
 
 /-- **Linear rules reproduce a single cell**: at `t = 2 ^ M₁ + … + 2 ^ Mᵣ` with the exponents
 well spaced the iterate is `|T| ^ r` copies of the cell, `T` the set of taps
@@ -893,26 +886,80 @@ theorem LocalRule.DoubledAgree.reproduces (f : LocalRule) (hq : f 0 0 0 = 0)
     rw [iterate_two_mul_dbl f hq hA]
     exact copies_dbl_single hcop
 
-/-- **Leaf: each of the fourteen rules reproduces a pattern**, by the three mechanisms:
+/-! ## Rule `22` on configurations supported in one coset of `4ℤ` -/
+
+/-- Rule `22` of the block is the classical package's `rule22`. -/
+theorem f22_eq_rule22 : f22 = Rule22Sparse.rule22 := by
+  funext a b c
+  revert a b c
+  decide
+
+/-- **The instance at finite configurations**: at every even time, rule `22` from a configuration
+supported in one coset of `4ℤ` is rule `90` (`Rule22Sparse.iterate_step_rule22_two_mul_eq_rule90`,
+Chan-López and Martín-Ruiz 2026, §3). -/
+theorem finRule_f22_iterate_two_mul_eq_f90 (s : FiniteConfiguration)
+    (hs : Rule22Sparse.SupportInCoset 4 ⇑s) (j : ℕ) :
+    (finRule f22 hq22)^[2 * j] s = (finRule f90 hq90)^[2 * j] s := by
+  apply DFunLike.coe_injective
+  rw [coe_finRule_iterate, coe_finRule_iterate, f22_eq_rule22]
+  exact Rule22Sparse.iterate_step_rule22_two_mul_eq_rule90 hs j
+
+/-- A map reproduces a pattern when its second iterate does. -/
+theorem Reproduces.of_iterate_two {U : FiniteConfiguration → FiniteConfiguration}
+    {p : FiniteConfiguration} (h : Reproduces (U^[2]) p) : Reproduces U p := by
+  refine ⟨h.1, fun N G => ?_⟩
+  obtain ⟨t, k, hk, hc⟩ := h.2 N G
+  exact ⟨2 * t, k, hk, by rwa [Function.iterate_mul]⟩
+
+/-- **Rule `22` reproduces a single cell**: its second iterate satisfies the doubling identity at
+offsets `∓ 2 ^ (M + 1)`, being rule `90`'s second iterate on this coset
+(`[RuleSpace] §5 Proposition 5.9`). -/
+theorem reproduces_f22_single :
+    Reproduces (finRule f22 hq22) (Finsupp.single (0 : ℤ) (1 : ZMod 2)) := by
+  have hp : (Finsupp.single (0 : ℤ) (1 : ZMod 2)) ≠ 0 := by
+    intro h0
+    have := congrArg (fun x => x 0) h0
+    simp at this
+  have hs : Rule22Sparse.SupportInCoset 4 ⇑(Finsupp.single (0 : ℤ) (1 : ZMod 2)) := by
+    intro i j hi hj
+    have hi' : i = 0 := by
+      by_contra h; exact hi (by simp [Ne.symm h])
+    have hj' : j = 0 := by
+      by_contra h; exact hj (by simp [Ne.symm h])
+    subst hi' hj'; simp
+  apply Reproduces.of_iterate_two
+  refine reproduces_of_doubling_identity hp (q := 2) (b := 4) (-2) le_rfl (by omega)
+    fun M t i => ?_
+  rw [← Function.iterate_mul, ← Function.iterate_mul,
+    finRule_f22_iterate_two_mul_eq_f90 _ hs, finRule_f22_iterate_two_mul_eq_f90 _ hs,
+    show 2 * (2 ^ M + t) = 2 ^ (M + 1) + 2 * t by ring, f90_iterate_two_pow_add]
+  simp only [Finset.sum_range_succ, Finset.range_zero, Finset.sum_empty, zero_add, pow_succ]
+  push_cast
+  rw [add_comm]
+  congr 2
+  ring
+
+/-- **Leaf: each of the fifteen rules reproduces a pattern**, by the four mechanisms:
 linear taps (rules `60`, `90`, `102`, `150`), agreement with rule `90` off adjacent cells
-(rules `18`, `26`, `82`, `146`, `154`, `210`, `218`), and doubled agreement (rules `94`, `122`,
-`126`). -/
-theorem reproduces_of_mem_fourteen : ReproducesOfMemFourteen := by
+(rules `18`, `26`, `82`, `146`, `154`, `210`, `218`), doubled agreement (rules `94`, `122`,
+`126`), and the coset mechanism of rule `22`. -/
+theorem reproduces_of_mem_fifteen : ReproducesOfMemFifteen := by
   intro f hq hf
-  simp only [fourteen, List.mem_cons, List.not_mem_nil, or_false] at hf
+  simp only [fifteen, List.mem_cons, List.not_mem_nil, or_false] at hf
   rcases hf with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl |
-      rfl <;>
+      rfl | rfl <;>
     first
     | exact ⟨_, LocalRule.LinearTaps.reproduces _ hq (by decide)⟩
     | exact ⟨_, LocalRule.AgreesOffAdjacent.reproduces _ hq
         (by unfold AgreesOffAdjacent; decide)⟩
     | exact ⟨_, LocalRule.DoubledAgree.reproduces _ hq (by decide)⟩
+    | exact ⟨_, reproduces_f22_single⟩
 
 /-- **The three hypotheses hold together**: the conjunction of the three hypotheses of
 `reproduction_bracket`, each proved above, so the main statement is not vacuous. -/
 theorem reproduction_bracket_nonvacuous :
-    NotReproducesOfDiamBounded ∧ DiamBoundedOfNotGrowing ∧ ReproducesOfMemFourteen :=
-  ⟨not_reproduces_of_diamBounded, diamBounded_of_not_growing, reproduces_of_mem_fourteen⟩
+    NotReproducesOfDiamBounded ∧ DiamBoundedOfNotGrowing ∧ ReproducesOfMemFifteen :=
+  ⟨not_reproduces_of_diamBounded, diamBounded_of_not_growing, reproduces_of_mem_fifteen⟩
 
 /-- The linear mechanism has a fixed instance: rule `60` and its single-cell pattern. -/
 theorem LocalRule.LinearTaps.reproduces_nonvacuous :
@@ -935,15 +982,102 @@ theorem LocalRule.DoubledAgree.reproduces_nonvacuous :
       Reproduces (finRule f hq) (dbl (Finsupp.single (0 : ℤ) (1 : ZMod 2))) :=
   ⟨f94, by decide, by decide, LocalRule.DoubledAgree.reproduces _ _ (by decide)⟩
 
+/-! ## The class of the coset mechanism -/
+
+/-- The backward direction: the eight rules agreeing with rule `90` off adjacent cells, and rule
+`22`, have two steps equal to rule `90`'s on every configuration supported in one coset of `4ℤ`. -/
+theorem iterate_two_eq_f90_on_coset_of (f : LocalRule) (hq : f 0 0 0 = 0)
+    (h : AgreesOffAdjacent f ∨ f = f22) :
+    ∀ s : FiniteConfiguration, Rule22Sparse.SupportInCoset 4 ⇑s →
+      (finRule f hq)^[2] s = (finRule f90 hq90)^[2] s := by
+  intro s hs
+  rcases h with h | rfl
+  · have hone : OneParity s := by
+      intro i j hi hj
+      rw [even_iff_two_dvd]
+      have := hs i j hi hj
+      omega
+    exact FiniteConfiguration.OneParity.iterate_eq_f90 f h s hone 2
+  · simpa using finRule_f22_iterate_two_mul_eq_f90 s hs 1
+
+private theorem supportInCoset_single_add_single_four :
+    Rule22Sparse.SupportInCoset 4
+      ⇑((Finsupp.single (0 : ℤ) (1 : ZMod 2) + Finsupp.single 4 (1 : ZMod 2) :
+        FiniteConfiguration)) := by
+  intro i j hi hj
+  simp only [Finsupp.add_apply, Finsupp.single_apply] at hi hj
+  split_ifs at hi hj <;> first | omega | simp_all
+
+private theorem supportInCoset_single_zero :
+    Rule22Sparse.SupportInCoset 4 ⇑(Finsupp.single (0 : ℤ) (1 : ZMod 2)) := by
+  intro i j hi hj
+  have hi' : i = 0 := by
+    by_contra h; exact hi (by simp [Ne.symm h])
+  have hj' : j = 0 := by
+    by_contra h; exact hj (by simp [Ne.symm h])
+  subst hi' hj'; simp
+
+set_option synthInstance.maxSize 4000 in
+set_option maxRecDepth 100000 in
+set_option maxHeartbeats 8000000 in
+-- the decision is over 256 rules; the kernel reduction needs the larger limits.
+/-- The finite decision behind the forward direction: the two-step images of the single cell and
+of the two cells `0` and `4`, read at the cells they can differ on, force a quiescent rule into
+the nine. -/
+private theorem coset_class_decision :
+    ∀ f : LocalRule, f 0 0 0 = 0 →
+      (∀ i ∈ [(-2 : ℤ), -1, 0, 1, 2],
+        (LocalRuleColumns.step f)^[2] (Pi.single (0 : ℤ) (1 : ZMod 2)) i =
+          (LocalRuleColumns.step LocalRuleColumns.rule90)^[2] (Pi.single (0 : ℤ) (1 : ZMod 2)) i) →
+      (∀ i ∈ [(-2 : ℤ), -1, 0, 1, 2, 3, 4, 5, 6],
+        (LocalRuleColumns.step f)^[2]
+            (Pi.single (0 : ℤ) (1 : ZMod 2) + Pi.single 4 (1 : ZMod 2)) i =
+          (LocalRuleColumns.step LocalRuleColumns.rule90)^[2]
+            (Pi.single (0 : ℤ) (1 : ZMod 2) + Pi.single 4 (1 : ZMod 2)) i) →
+      AgreesOffAdjacent f ∨ (∀ a b c, f a b c = f22 a b c) := by
+  decide
+
+/-- **The class of the coset mechanism**: the quiescent rules whose two steps on every
+configuration supported in one coset of `4ℤ` are rule `90`'s two steps are exactly the eight
+agreeing with rule `90` off adjacent cells and rule `22`. -/
+theorem iterate_two_eq_f90_on_coset_iff (f : LocalRule) (hq : f 0 0 0 = 0) :
+    (∀ s : FiniteConfiguration, Rule22Sparse.SupportInCoset 4 ⇑s →
+        (finRule f hq)^[2] s = (finRule f90 hq90)^[2] s) ↔
+      (AgreesOffAdjacent f ∨ f = f22) := by
+  refine ⟨fun H => ?_, iterate_two_eq_f90_on_coset_of f hq⟩
+  have key : ∀ s : FiniteConfiguration, Rule22Sparse.SupportInCoset 4 ⇑s → ∀ i,
+      (LocalRuleColumns.step f)^[2] ⇑s i =
+        (LocalRuleColumns.step LocalRuleColumns.rule90)^[2] ⇑s i := by
+    intro s hs i
+    have := congrArg (fun t : FiniteConfiguration => (⇑t : ℤ → ZMod 2) i) (H s hs)
+    rw [coe_finRule_iterate, coe_finRule_iterate] at this
+    exact this
+  have h1 := key _ supportInCoset_single_zero
+  have h2 := key _ supportInCoset_single_add_single_four
+  rw [Finsupp.single_eq_pi_single] at h1
+  rw [Finsupp.coe_add, Finsupp.single_eq_pi_single, Finsupp.single_eq_pi_single] at h2
+  rcases coset_class_decision f hq (fun i _ => h1 i) (fun i _ => h2 i) with h | h
+  · exact Or.inl h
+  · exact Or.inr (funext₃ h)
+
+/-- The class predicate of the coset mechanism is decidable, so its subtype is a finite type. -/
+instance : DecidablePred fun f : LocalRule => f 0 0 0 = 0 ∧ (AgreesOffAdjacent f ∨ f = f22) :=
+  fun f => by unfold AgreesOffAdjacent; infer_instance
+
+/-- **Nine quiescent rules carry the coset mechanism.** -/
+theorem card_iterate_two_eq_f90_on_coset :
+    Fintype.card {f : LocalRule // f 0 0 0 = 0 ∧ (AgreesOffAdjacent f ∨ f = f22)} = 9 := by
+  decide
+
 end ECA
 
 /-- info: 'ECA.reproduction_bracket' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms ECA.reproduction_bracket
 
-/-- info: 'ECA.fourteen_subset_growing' depends on axioms: [propext, Quot.sound] -/
+/-- info: 'ECA.fifteen_subset_growing' depends on axioms: [propext, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
-#print axioms ECA.fourteen_subset_growing
+#print axioms ECA.fifteen_subset_growing
 
 /-- info: 'ECA.copies_diam_le' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -989,10 +1123,10 @@ Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms ECA.LocalRule.DoubledAgree.reproduces
 
-/-- info: 'ECA.reproduces_of_mem_fourteen' depends on axioms: [propext, Classical.choice,
+/-- info: 'ECA.reproduces_of_mem_fifteen' depends on axioms: [propext, Classical.choice,
 Quot.sound] -/
 #guard_msgs (whitespace := lax) in
-#print axioms ECA.reproduces_of_mem_fourteen
+#print axioms ECA.reproduces_of_mem_fifteen
 
 /-- info: 'ECA.reproduction_bracket_nonvacuous' depends on axioms: [propext, Classical.choice,
 Quot.sound] -/
@@ -1013,3 +1147,36 @@ Classical.choice, Quot.sound] -/
 Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms ECA.LocalRule.DoubledAgree.reproduces_nonvacuous
+
+/-- info: 'ECA.f22_eq_rule22' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.f22_eq_rule22
+
+/-- info: 'ECA.finRule_f22_iterate_two_mul_eq_f90' depends on axioms: [propext, Classical.choice,
+Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.finRule_f22_iterate_two_mul_eq_f90
+
+/-- info: 'ECA.Reproduces.of_iterate_two' depends on axioms: [propext, Classical.choice, Quot.sound]
+-/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.Reproduces.of_iterate_two
+
+/-- info: 'ECA.reproduces_f22_single' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.reproduces_f22_single
+
+/-- info: 'ECA.iterate_two_eq_f90_on_coset_of' depends on axioms: [propext, Classical.choice,
+Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.iterate_two_eq_f90_on_coset_of
+
+/-- info: 'ECA.iterate_two_eq_f90_on_coset_iff' depends on axioms: [propext, Classical.choice,
+Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.iterate_two_eq_f90_on_coset_iff
+
+/-- info: 'ECA.card_iterate_two_eq_f90_on_coset' depends on axioms: [propext, Classical.choice,
+Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.card_iterate_two_eq_f90_on_coset

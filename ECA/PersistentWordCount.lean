@@ -128,7 +128,7 @@ end LocalRule
 /-! ## The three-valued step -/
 
 /-- A cell lies in the image of a set under a shift exactly when its preimage lies in the set. -/
-theorem mem_image_add_iff (D : Finset ℤ) (s q : ℤ) : q ∈ D.image (· + s) ↔ q - s ∈ D := by
+private theorem mem_image_add_iff (D : Finset ℤ) (s q : ℤ) : q ∈ D.image (· + s) ↔ q - s ∈ D := by
   simp only [Finset.mem_image]
   constructor
   · rintro ⟨a, ha, rfl⟩; simpa using ha
@@ -136,20 +136,20 @@ theorem mem_image_add_iff (D : Finset ℤ) (s q : ℤ) : q ∈ D.image (· + s) 
 
 /-- A cell lies in the image of a set under the shift by `-1` exactly when its successor lies in the
 set. -/
-theorem mem_image_sub_one_iff (D : Finset ℤ) (q : ℤ) : q ∈ D.image (· - 1) ↔ q + 1 ∈ D := by
+private theorem mem_image_sub_one_iff (D : Finset ℤ) (q : ℤ) : q ∈ D.image (· - 1) ↔ q + 1 ∈ D := by
   simp only [Finset.mem_image]
   constructor
   · rintro ⟨a, ha, rfl⟩; simpa using ha
   · intro h; exact ⟨q + 1, h, by ring⟩
 
 /-- On the known set the filled value is the stored value. -/
-theorem fillAt_of_mem {D : Finset ℤ} {v : Configuration} {p : ℤ} (h : p ∈ D) : fillAt D v p = v p :=
-  by
+private theorem fillAt_of_mem {D : Finset ℤ} {v : Configuration} {p : ℤ} (h : p ∈ D) :
+    fillAt D v p = v p := by
   simp [fillAt, h]
 
 /-- Membership in the known set of the step: a cell near the known set at which the step is
 forced. -/
-theorem LocalRule.stepWord_fst_mem (f : LocalRule) (W : Finset ℤ × Configuration)
+private theorem LocalRule.stepWord_fst_mem (f : LocalRule) (W : Finset ℤ × Configuration)
     (p : ℤ) : p ∈ (stepWord f W).1 ↔
       (p ∈ W.1 ∨ p - 1 ∈ W.1 ∨ p + 1 ∈ W.1) ∧ Forced f W.1 W.2 p := by
   simp only [stepWord, Finset.mem_filter, Finset.mem_union, mem_image_add_iff,
@@ -157,7 +157,7 @@ theorem LocalRule.stepWord_fst_mem (f : LocalRule) (W : Finset ℤ × Configurat
   tauto
 
 /-- The value function of the step. -/
-theorem LocalRule.stepWord_snd (f : LocalRule) (W : Finset ℤ × Configuration)
+private theorem LocalRule.stepWord_snd (f : LocalRule) (W : Finset ℤ × Configuration)
     (p : ℤ) : (stepWord f W).2 p = if Forced f W.1 W.2 p then
      f (fillAt W.1 W.2 (p - 1)) (fillAt W.1 W.2 p) (fillAt W.1 W.2 (p + 1)) else 0 := rfl
 
@@ -174,7 +174,7 @@ theorem LocalRule.stepsInto_stepWord (f : LocalRule) (D : Finset ℤ)
     (fun h => hx _ h)
 
 /-- A forced value is the value at the filled triple of any larger partial state. -/
-theorem LocalRule.forced_value_eq {f : LocalRule} {W W' : Finset ℤ × Configuration}
+private theorem LocalRule.forced_value_eq {f : LocalRule} {W W' : Finset ℤ × Configuration}
     (hC : Contains W' W) {p : ℤ} (hF : Forced f W.1 W.2 p) :
     f (fillAt W'.1 W'.2 (p - 1)) (fillAt W'.1 W'.2 p) (fillAt W'.1 W'.2 (p + 1)) =
       f (fillAt W.1 W.2 (p - 1)) (fillAt W.1 W.2 p) (fillAt W.1 W.2 (p + 1)) := by
@@ -184,7 +184,7 @@ theorem LocalRule.forced_value_eq {f : LocalRule} {W W' : Finset ℤ × Configur
   exact hF _ _ _ (fun h => key _ h) (fun h => key _ h) (fun h => key _ h)
 
 /-- Forcing persists under extension of the partial state. -/
-theorem LocalRule.forced_mono {f : LocalRule} {W W' : Finset ℤ × Configuration}
+private theorem LocalRule.forced_mono {f : LocalRule} {W W' : Finset ℤ × Configuration}
     (hC : Contains W' W) {p : ℤ} (hF : Forced f W.1 W.2 p) : Forced f W'.1 W'.2 p := by
   have hE := forced_value_eq hC hF
   obtain ⟨hD, hv⟩ := hC
@@ -207,12 +207,12 @@ theorem LocalRule.stepWord_mono (f : LocalRule) {W W' : Finset ℤ × Configurat
     simp only [hj.2, forced_mono hC hj.2, ↓reduceIte, forced_value_eq hC hj.2]
 
 /-- Filling commutes with translation. -/
-theorem fillAt_translate (D : Finset ℤ) (v : Configuration) (s q : ℤ) :
+private theorem fillAt_translate (D : Finset ℤ) (v : Configuration) (s q : ℤ) :
     fillAt (D.image (· + s)) (fun j => v (j - s)) q = fillAt D v (q - s) := by
   simp only [fillAt, mem_image_add_iff]
 
 /-- Forcing commutes with translation. -/
-theorem LocalRule.forced_translate (f : LocalRule) (D : Finset ℤ)
+private theorem LocalRule.forced_translate (f : LocalRule) (D : Finset ℤ)
     (v : Configuration) (s p : ℤ) :
     Forced f (D.image (· + s)) (fun j => v (j - s)) p ↔ Forced f D v (p - s) := by
   have e1 : p - 1 - s = p - s - 1 := by ring
@@ -233,12 +233,12 @@ theorem LocalRule.stepWord_translate (f : LocalRule) (s : ℤ)
 /-! ## The return lemma -/
 
 /-- The iterate chain extends by one step. -/
-theorem LocalRule.iter_succ (f : LocalRule) (W : Finset ℤ × Configuration) (t : ℕ) :
+private theorem LocalRule.iter_succ (f : LocalRule) (W : Finset ℤ × Configuration) (t : ℕ) :
     iter f W (t + 1) = stepWord f (iter f W t) :=
   Function.iterate_succ_apply' (stepWord f) t W
 
 /-- A return propagates: the containment of a translate persists at every later pair of iterates. -/
-theorem contains_translate_iter (f : LocalRule)
+private theorem contains_translate_iter (f : LocalRule)
     (W : Finset ℤ × Configuration) (t₁ t₂ : ℕ) (s : ℤ)
     (hret : Contains (iter f W t₂) (translateWord s (iter f W t₁))) (k : ℕ) :
     Contains (iter f W (t₂ + k)) (translateWord s (iter f W (t₁ + k))) := by
@@ -293,7 +293,7 @@ theorem LocalRule.hasPersistentWord_of_return_nonvacuous :
 /-! ## The bounded certificate -/
 
 /-- Every word of `sixWords` is on at most two cells. -/
-theorem card_le_two_of_mem_sixWords : ∀ W ∈ sixWords, W.1.card ≤ 2 := by decide
+private theorem card_le_two_of_mem_sixWords : ∀ W ∈ sixWords, W.1.card ≤ 2 := by decide
 
 /-- **The certificate is sound**: a rule that returns within two has a persistent word. -/
 theorem LocalRule.ReturnsWithinTwo.hasPersistentWord (f : LocalRule)

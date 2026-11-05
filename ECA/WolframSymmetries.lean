@@ -221,22 +221,22 @@ theorem card_permutiveEnd_eq_card_numbers :
 /-! ## The six bijective rules -/
 
 /-- Wolfram number `204` is the identity rule `a b c ↦ b`. -/
-theorem LocalRule.ofWolfram_204 (a b c : ZMod 2) : LocalRule.ofWolfram 204 a b c = b := by
+private theorem LocalRule.ofWolfram_204 (a b c : ZMod 2) : LocalRule.ofWolfram 204 a b c = b := by
   revert a b c
   decide
 
 /-- Wolfram number `51` is the complement of the identity rule, `a b c ↦ 1 + b`. -/
-theorem LocalRule.ofWolfram_51 (a b c : ZMod 2) : LocalRule.ofWolfram 51 a b c = 1 + b := by
+private theorem LocalRule.ofWolfram_51 (a b c : ZMod 2) : LocalRule.ofWolfram 51 a b c = 1 + b := by
   revert a b c
   decide
 
 /-- Wolfram number `15` is the rule `a b c ↦ 1 + a`. -/
-theorem LocalRule.ofWolfram_15 (a b c : ZMod 2) : LocalRule.ofWolfram 15 a b c = 1 + a := by
+private theorem LocalRule.ofWolfram_15 (a b c : ZMod 2) : LocalRule.ofWolfram 15 a b c = 1 + a := by
   revert a b c
   decide
 
 /-- Wolfram number `85` is the rule `a b c ↦ 1 + c`. -/
-theorem LocalRule.ofWolfram_85 (a b c : ZMod 2) : LocalRule.ofWolfram 85 a b c = 1 + c := by
+private theorem LocalRule.ofWolfram_85 (a b c : ZMod 2) : LocalRule.ofWolfram 85 a b c = 1 + c := by
   revert a b c
   decide
 
@@ -338,7 +338,7 @@ theorem bijective_lineRule_ofWolfram_15 : Function.Bijective (lineRule (LocalRul
 
 open Nonautonomous in
 /-- Rule `204`, as a rule on the finitely supported configurations, is the identity. -/
-theorem finRule_ofWolfram_204 (hq : LocalRule.ofWolfram 204 0 0 0 = 0) : finRule
+private theorem finRule_ofWolfram_204 (hq : LocalRule.ofWolfram 204 0 0 0 = 0) : finRule
     (LocalRule.ofWolfram 204) hq = id := by
   funext s
   ext i
@@ -346,7 +346,7 @@ theorem finRule_ofWolfram_204 (hq : LocalRule.ofWolfram 204 0 0 0 = 0) : finRule
   rfl
 
 /-- Rule `240`, as a rule on the finitely supported configurations, is `rule240`. -/
-theorem finRule_ofWolfram_240 (hq : LocalRule.ofWolfram 240 0 0 0 = 0) : finRule
+private theorem finRule_ofWolfram_240 (hq : LocalRule.ofWolfram 240 0 0 0 = 0) : finRule
     (LocalRule.ofWolfram 240) hq = rule240 := by
   funext s
   ext i

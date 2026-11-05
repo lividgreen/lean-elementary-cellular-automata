@@ -145,7 +145,7 @@ private theorem word_and (H s : ℕ) : word H s &&& 31 = word H s := by
 
 /-- The word at a pattern of an assembled map is the assembling word, for patterns below
 thirty-two. -/
-theorem word_mkMap (g : ℕ → ℕ) {s : ℕ} (hs : s < 32) : word (mkMap g) s = g s &&& 31 := by
+private theorem word_mkMap (g : ℕ → ℕ) {s : ℕ} (hs : s < 32) : word (mkMap g) s = g s &&& 31 := by
   apply Nat.eq_of_testBit_eq
   intro j
   simp only [word, mkMap, Nat.testBit_and, Nat.testBit_shiftRight, testBit_31,
@@ -167,13 +167,13 @@ private theorem mkPart_congr (g g' : ℕ → ℕ) (m : ℕ) (h : ∀ s < m, g s 
 
 /-- An assembled map depends on its word function only through the five low bits at the
 thirty-two patterns. -/
-theorem mkMap_congr (g g' : ℕ → ℕ) (h : ∀ s < 32, g s &&& 31 = g' s &&& 31) :
+private theorem mkMap_congr (g g' : ℕ → ℕ) (h : ∀ s < 32, g s &&& 31 = g' s &&& 31) :
     mkMap g = mkMap g' := mkPart_congr g g' 32 h
 
 /-! ## The step and relabeling -/
 
 /-- The cell read at index `j` of the context row `b, a, w₀, …, w₄`. -/
-def ctxCell (b a w : ℕ) : ℕ → ℕ
+private def ctxCell (b a w : ℕ) : ℕ → ℕ
   | 0 => b
   | 1 => a
   | k + 2 => bitN (w.testBit k)
@@ -219,7 +219,7 @@ private theorem testBit_bitN_shl (p : Bool) (i j : ℕ) :
     simp [h, h']
 
 /-- The bits of a step word are the rule applied along the context row. -/
-theorem stepCode_testBit (tf b a w : ℕ) (j : ℕ) (hj : j < 5) :
+private theorem stepCode_testBit (tf b a w : ℕ) (j : ℕ) (hj : j < 5) :
     (stepCode tf b a w).testBit j =
       tf.testBit (4 * ctxCell b a w j + 2 * ctxCell b a w (j + 1) + ctxCell b a w (j + 2)) := by
   unfold stepCode
@@ -227,7 +227,7 @@ theorem stepCode_testBit (tf b a w : ℕ) (j : ℕ) (hj : j < 5) :
   interval_cases j <;> simp [ctxCell]
 
 /-- The word of a stepped map at a pattern is the step of the word. -/
-theorem word_stepMap (tf b a H : ℕ) {s : ℕ} (hs : s < 32) :
+private theorem word_stepMap (tf b a H : ℕ) {s : ℕ} (hs : s < 32) :
     word (stepMap tf b a H) s = stepCode tf b a (word H s) := by
   rw [stepMap, word_mkMap _ hs]
   exact and_31_of_lt (stepCode_lt _ _ _ _)
@@ -348,7 +348,7 @@ private theorem val_eq_bitN (z : ZMod 2) : z.val = bitN (decide (z = 1)) := by
   revert z; decide
 
 /-- The element of `ZMod 2` of a Boolean. -/
-def bitZ (p : Bool) : ZMod 2 := cond p 1 0
+private def bitZ (p : Bool) : ZMod 2 := cond p 1 0
 
 private theorem zmod_xor (z : ZMod 2) (p : Bool) :
     decide (z + bitZ p = 1) = xor (decide (z = 1)) p := by
