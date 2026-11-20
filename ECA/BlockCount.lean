@@ -550,11 +550,12 @@ theorem leftClear_hypothesis_load_bearing :
 
 /-- The state with exactly the cells of a list set. -/
 private noncomputable def stateOf (L : List ℤ) : FiniteConfiguration :=
-  ∑ i ∈ L.toFinset, Finsupp.single i 1
+  Finsupp.indicator L.toFinset fun _ _ => (1 : ZMod 2)
 
 private theorem stateOf_apply (L : List ℤ) (x : ℤ) : stateOf L x = if x ∈ L then 1 else 0 := by
-  classical
-  simp [stateOf, Finsupp.finsetSum_apply, Finsupp.single_apply]
+  unfold stateOf
+  rw [Finsupp.indicator_apply]
+  simp
 
 private theorem FiniteConfiguration.diam_stateOf {L : List ℤ} {a b : ℤ} (hab : a ≤ b) (ha : a ∈ L)
   (hb : b ∈ L)

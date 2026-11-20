@@ -317,41 +317,44 @@ set_option maxHeartbeats 4000000 in
 theorem not_returnsWithinTwo_add_ends :
     ¬ ReturnsWithinTwo (fun a _ c : ZMod 2 => a + c) := by decide
 
-set_option maxRecDepth 8000 in
-set_option maxHeartbeats 4000000 in
--- the ambient type has 256 members; kernel reduction of the nested Pi-Fintype instance and of the
--- bounded search needs more than the defaults of both limits.
 /-- **The certificate holds at `128` of the `256` rules.** -/
 theorem card_returnsWithinTwo :
     Fintype.card {f : LocalRule // ReturnsWithinTwo f} = 128 := by
-  decide
+  decide +kernel
 
-set_option maxRecDepth 8000 in
-set_option maxHeartbeats 4000000 in
--- see card_returnsWithinTwo.
 /-- **Permutivity at an end holds at `28` rules.** -/
 theorem card_permutiveEnd :
     Fintype.card {f : LocalRule //
       LeftPermutive f ∨ RightPermutive f} = 28 := by
-  decide
+  decide +kernel
 
-set_option maxRecDepth 8000 in
-set_option maxHeartbeats 4000000 in
--- see card_returnsWithinTwo.
 /-- **Both hold at `4` rules**: the two shifts and their complements. -/
 theorem card_returnsWithinTwo_and_permutiveEnd :
     Fintype.card {f : LocalRule //
       ReturnsWithinTwo f ∧ (LeftPermutive f ∨ RightPermutive f)} = 4 := by
-  decide
+  -- decide the permutive test first, so the certificate is evaluated at the 28 permutive rules
+  -- only, then restore the stated order of the conjunction.
+  have h : Fintype.card {f : LocalRule //
+      (LeftPermutive f ∨ RightPermutive f) ∧ ReturnsWithinTwo f} = 4 := by decide +kernel
+  rw [← h]
+  exact Fintype.card_congr (Equiv.subtypeEquivRight fun f => and_comm)
 
-set_option maxRecDepth 8000 in
-set_option maxHeartbeats 4000000 in
--- see card_returnsWithinTwo.
 /-- **Either holds at `152` rules**: the class of the corollary below. -/
 theorem card_forcingClass :
     Fintype.card {f : LocalRule //
       ReturnsWithinTwo f ∨ LeftPermutive f ∨ RightPermutive f} = 152 := by
-  decide
+  -- inclusion and exclusion over the three counts above, with no further decision.
+  have h1 := card_returnsWithinTwo
+  have h2 := card_permutiveEnd
+  have h3 := card_returnsWithinTwo_and_permutiveEnd
+  simp only [Fintype.card_subtype] at h1 h2 h3 ⊢
+  rw [Finset.filter_and, Finset.filter_or] at h3
+  rw [Finset.filter_or] at h2
+  rw [Finset.filter_or, Finset.filter_or]
+  have h4 := Finset.card_union_add_card_inter (Finset.univ.filter ReturnsWithinTwo)
+    ((Finset.univ.filter LeftPermutive) ∪ (Finset.univ.filter RightPermutive))
+  have h1' : (Finset.univ.filter ReturnsWithinTwo).card = 128 := by convert h1
+  omega
 
 /-! ## The class corollary -/
 

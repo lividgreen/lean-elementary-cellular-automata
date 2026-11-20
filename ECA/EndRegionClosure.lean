@@ -739,16 +739,35 @@ theorem LocalRule.lineRule_iterate_eq_of_erasesWithin_two_of_mem_endClosureRules
     (lineRule f)^[τ] x = (lineRule f)^[τ] y :=
   absurd hx (not_erasesWithin_two_of_mem_endClosureRules f hf τ x)
 
-set_option maxRecDepth 8000 in
-set_option maxHeartbeats 4000000 in
--- the ambient type has 256 members; kernel reduction of the nested Pi-Fintype instance, of the
--- bounded search and of the list membership needs more than the defaults of both limits.
 /-- **The class extended by the twelve rules holds at `164` of the `256` rules.** -/
 theorem card_forcingClass_or_endClosure :
     Fintype.card {f : LocalRule //
       ReturnsWithinTwo f ∨ LeftPermutive f ∨
         RightPermutive f ∨ f ∈ endClosureRules} = 164 := by
-  decide
+  -- the count `152` of the class already decided, the twelve rules and their empty overlap with
+  -- the class decided by kernel evaluation, the certificate evaluated at the twelve rules only,
+  -- and inclusion and exclusion for the union.
+  have h1 := card_forcingClass
+  have h2 : Fintype.card {f : LocalRule // f ∈ endClosureRules} = 12 := by decide +kernel
+  have h3 : Fintype.card {f : LocalRule // f ∈ endClosureRules ∧
+      (ReturnsWithinTwo f ∨ LeftPermutive f ∨ RightPermutive f)} = 0 := by decide +kernel
+  simp only [Fintype.card_subtype] at h1 h2 h3 ⊢
+  have hu : (Finset.univ.filter fun f : LocalRule =>
+      ReturnsWithinTwo f ∨ LeftPermutive f ∨ RightPermutive f ∨ f ∈ endClosureRules) =
+      (Finset.univ.filter fun f : LocalRule => ReturnsWithinTwo f ∨ LeftPermutive f ∨
+        RightPermutive f) ∪ Finset.univ.filter fun f : LocalRule => f ∈ endClosureRules := by
+    ext f
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union, or_assoc]
+  have hi : (Finset.univ.filter fun f : LocalRule => ReturnsWithinTwo f ∨ LeftPermutive f ∨
+        RightPermutive f) ∩ Finset.univ.filter (fun f : LocalRule => f ∈ endClosureRules) = ∅ := by
+    rw [← Finset.card_eq_zero, Finset.inter_comm, ← Finset.filter_and]
+    exact h3
+  have h4 := Finset.card_union_add_card_inter
+    (Finset.univ.filter fun f : LocalRule => ReturnsWithinTwo f ∨ LeftPermutive f ∨
+        RightPermutive f) (Finset.univ.filter fun f : LocalRule => f ∈ endClosureRules)
+  rw [hi, Finset.card_empty] at h4
+  rw [hu]
+  omega
 
 /-- **The conclusion of `LocalRule.lineRule_iterate_eq_of_erasesWithin_two_of_forcing`
 over the extended class**: at every scale, two states each erasing

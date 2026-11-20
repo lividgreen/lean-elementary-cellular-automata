@@ -210,13 +210,16 @@ private theorem FiniteConfiguration.translate_translate (a b : ℤ) (s : FiniteC
   ext x
   rw [translate_apply_sub, translate_apply_sub, translate_apply_sub, sub_sub]
 
-private theorem LocalRule.finRule_translate (f : LocalRule) (hq : f 0 0 0 = 0)
+/-- **A local rule commutes with translation**: the global map of a quiescent rule carries the
+translate of a finite configuration to the translate of its image. -/
+theorem LocalRule.finRule_translate (f : LocalRule) (hq : f 0 0 0 = 0)
     (k : ℤ) (s : FiniteConfiguration) : finRule f hq (τ k s) = τ k (finRule f hq s) := by
   ext x
   simp only [finRule_apply, translate_apply_sub]
   rw [show x - 1 - k = x - k - 1 by ring, show x + 1 - k = x - k + 1 by ring]
 
-private theorem FiniteConfiguration.diam_translate (d : ℤ) (s : FiniteConfiguration) : diam (τ d s)
+/-- **Translation preserves the support diameter**. -/
+theorem FiniteConfiguration.diam_translate (d : ℤ) (s : FiniteConfiguration) : diam (τ d s)
   = diam s := by
   by_cases hs : s.support.Nonempty
   · have hr : (τ d s).support.Nonempty := by
@@ -1213,6 +1216,12 @@ theorem mem_growingPart_of_injective_of_notMem_range_nonvacuous :
       seedOneOne ∉ Set.range (finRule f106 hq106) :=
   ⟨by decide, finRule_f106_injective, seedOneOne_notMem_range_f106⟩
 
+/-- **At the rule of rule `106` two states merge only when equal**: `finRule_f106_injective`
+and `Nonautonomous.merges_iff_eq_of_injective`. -/
+theorem merges_finRule_f106_iff_eq {s s' : FiniteConfiguration} :
+    Merges (finRule f106 hq106) s s' ↔ s = s' :=
+  merges_iff_eq_of_injective finRule_f106_injective
+
 /-! ## The per-rule statements -/
 
 /-- **Unbounded growing width at `f106`**: the orbit of `seedOneOne` under `f106` has unbounded
@@ -2120,3 +2129,8 @@ set_option linter.style.longLine false in
 /-- info: 'ECA.diam_seedOneOne_and_step_f226' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms ECA.diam_seedOneOne_and_step_f226
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.merges_finRule_f106_iff_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.merges_finRule_f106_iff_eq

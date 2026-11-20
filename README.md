@@ -46,6 +46,10 @@ erase a local perturbation — at every rule where it can, and exactly at rule
   rule `106` among them is its own next level under a cell map doubling
   positions, a level blind to the host's phase within one of its steps, and
   reproduces every state on the orbit of a pair.
+- **Conserved sliding block codes.** Seven quiescent tables whose support
+  grows conserve a sliding block code that is not zero, seventeen conserve
+  none, and at eight no nonzero code is read with an injective law on the
+  growing part.
 - **The rule space itself.** The Wolfram number with its two symmetries acting
   on the dynamics, the 88 classes they generate, the permutive rules counted,
   the six rules that are injective, and the 226 shown not surjective.
@@ -56,7 +60,9 @@ erase a local perturbation — at every rule where it can, and exactly at rule
 ## Why it is worth having
 
 A search of the Lean libraries and of the other provers, dated in the scope
-section, found no statement of this library in any of them. In the literature
+section, found none of the statements named below in any of them; a few of the
+library's smaller facts, the 88 classes among them, are proved in Lean
+repositories of rule `30` begun since, which that section lists. In the literature
 the same search found the growth of two rules observed by experiment and three
 block mechanisms listed as computed table rows; it found no statement of the
 growth dichotomy or its census, of rule `90`'s rays at every rational speed, of
@@ -71,7 +77,10 @@ eventually periodic columns, rule `90`'s `2^j` identity, Pascal's triangle
 modulo two and Lucas's criterion at the prime two — are in
 [lean-classical-upstream](https://github.com/lividgreen/lean-classical-upstream)
 (concept DOI [10.5281/zenodo.23257423](https://doi.org/10.5281/zenodo.23257423)),
-which this package requires.
+which this package requires. It also requires
+[lhallee/rule30-open](https://github.com/lhallee/rule30-open), pinned at a
+commit, whose two mirror-column statements at rules `90` and `150` the equivalences
+of `MirrorColumns.lean` are proved from.
 
 ## What is proved here
 
@@ -132,8 +141,18 @@ statement's number in the library's paper is given where it has one.
   (`pos_width_not_exists_is_root_antichain_int_succ`). Boundary: a separation,
   not a dichotomy — a factor map with an injective law whose image of a fiber
   is an antichain under its own law can exceed the width
-  (`exists_conservation_factor_extent_gt_width`). *Rule Space*
-  Propositions 2.6 to 2.8.
+  (`exists_conservation_factor_extent_gt_width`), by an unbounded amount at
+  width one where the map depends on the time
+  (`exists_conservation_factor_extent_unbounded_width_one`; the time elapsed
+  since admission, halved, does the same through a map that is not injective
+  from the first stage on: `halfElapsedRead`, `semiconj_halfElapsedRead`,
+  `imageFiber_halfElapsedRead_slow_clock_encard`,
+  `not_injOn_halfElapsedRead`), and cannot where
+  it does not (`encard_imageFiber_le_width_of_fixed`, over
+  `width_imageFiber_le_of_fixed`, which takes no hypothesis on the law), the
+  law's injectivity being needed
+  (`exists_fixed_factor_extent_gt_width_of_not_injective`). *Rule Space*
+  Propositions 2.6 to 2.8 and 2.14.
 
 - **Forward images, and the width computed exactly at elementary cellular
   automata** (`ForwardImages.lean`, `PermutiveWidth.lean`): the nonautonomous
@@ -169,6 +188,11 @@ statement's number in the library's paper is given where it has one.
   additive (`ℕ∞` subtraction is truncated), the closed forms being the paper's
   restatement; the permutivity-to-injectivity route is classical; the
   cap says nothing about attainment beyond the rules named.
+- **Orbit segments** (`OrbitSegments.lean`): the points reached within `t`
+  steps from a set (`orbitSegments`) form a positively invariant family
+  (`positivelyInvariant_orbitSegments`) of at most `|S|·(t + 1)` points
+  (`encard_orbitSegments_le`), bounded in size from a finite set exactly
+  when every orbit from it is finite (`bounded_encard_orbitSegments_iff`).
 - **The growing width: six rules grow, the identity does not**
   (`GrowingWidth.lean`, `LightConeWidth.lean`): the width restricted to
   the states whose orbit has unbounded size (`GrowingPart`, `growingWidth`) —
@@ -178,7 +202,8 @@ statement's number in the library's paper is given where it has one.
   genuine restriction: `0` against `t + 1` at the identity
   (`growingWidth_id_slow_clock_eq_zero_width_eq_succ`). Under the support
   diameter (`diam`) and along the light cone of an `n`-cell window
-  (`lightCone`), an update with exact endpoint moves `(1, 1)` has the nonzero
+  (`lightCone`, of `2^(n+2t)` configurations at time `t`: `encard_lightCone`),
+  an update with exact endpoint moves `(1, 1)` has the nonzero
   states as its growing part (`growingPart_eq_ne_zero`), and with a trivial
   kernel and injectivity its growing width is at least `2^(n+t−1)`
   (`two_pow_le_growingWidth_lightCone`), hence unbounded
@@ -266,6 +291,17 @@ statement's number in the library's paper is given where it has one.
   (`growingWidth_lightCone_traffic_six`). The class hypothesis is needed
   (`traffic_hypothesis_load_bearing`). *Rule Space* Proposition
   3.6. Boundary: no rate of the diameter is stated at rule 106.
+- **Configurations up to translation** (`TranslationClasses.lean`): the
+  finite configurations up to translation (`translationSetoid`,
+  `TranslationClass`), to which every quiescent rule's update descends
+  (`classRule`, by `finRule_translate`) with its support diameter
+  (`TranslationClass.diam`, by `diam_translate`); finitely many classes have
+  each diameter (`finite_diam_le`), so a class's orbit is finite exactly when
+  its configuration's diameter stays bounded
+  (`finite_range_classRule_iff`), and the identity, table 204 (`f204`), and
+  both shifts fix every class (`classRule_f204_eq_id`,
+  `classRule_f170_eq_id`, `classRule_f240_eq_id`). Boundary: classical
+  counting.
 - **The last ten rules, by a count of blocks** (`BlockCount.lean`): a
   count that grows by one a step only where two further counted cells stand
   within a fixed distance behind stays under a line
@@ -431,6 +467,68 @@ statement's number in the library's paper is given where it has one.
   existence of a period only; velocities `1` and `−1` only; nothing about
   any other column of rule `90`, any other seed, or any column of another
   growing rule.
+- **Three classes of eventually periodic columns** (`ObservedColumnClasses.lean`):
+  at a quiescent rule with `f(0, 0, 1) = 0` and `f(0, 1, 0) = f(0, 1, 1) = 1`
+  the column at a finite seed's leftmost set cell reads `1` at every step
+  (`observedColumn_min_eq_one_of_frozenLeftEdge`, its conclusion failing at
+  rule 90, `observedColumn_min_frozenLeftEdge_guard`); at a rule that does not
+  read one neighbour every column from every finite seed is eventually
+  periodic (`eventuallyPeriodic_observedColumn_of_left_unread`,
+  `eventuallyPeriodic_observedColumn_of_right_unread`, at rules 102 and 60
+  `eventuallyPeriodic_observedColumn_f102` and
+  `eventuallyPeriodic_observedColumn_f60`); and a rule equal to its mirror
+  keeps a seed's mirror symmetry about a cell (`finRule_iterate_mirror`), so
+  that cell's column reads `0` from step one on at rule 90 and the seed's
+  value at rule 150 (`observedColumn_f90_eq_zero_of_mirror`,
+  `observedColumn_f150_eq_of_mirror`). The converse of the last is the next
+  item. *Rule Space* Proposition 4.5.
+- **The mirror columns** (`MirrorColumns.lean`): a sequence that copies itself
+  on blocks of powers of two and misses the copy at one corner of infinitely
+  many blocks is not eventually periodic
+  (`not_eventuallyPeriodic_of_two_pow_blocks`); at rules 90 and 150 a column
+  from a finite seed is eventually periodic exactly when the seed is
+  mirror-symmetric about its cell (`eventuallyPeriodic_observedColumn_f90_iff`,
+  `eventuallyPeriodic_observedColumn_f150_iff`), at the rules agreeing with
+  rule 90 off adjacent cells from a seed of one parity
+  (`eventuallyPeriodic_observedColumn_iff_of_oneParity`), and, in one
+  direction, at the doubled-agreeing rules from a doubled seed
+  (`not_eventuallyPeriodic_observedColumn_dbl`); so a seed of two set cells or
+  more has a column at its leftmost set cell that is not eventually periodic
+  at each (`not_eventuallyPeriodic_observedColumn_min_f90` and its three
+  siblings); a seed whose orbit reaches a state of one parity is decided by
+  that state (`eventuallyPeriodic_observedColumn_iff_of_iterate_oneParity`),
+  with seven seeds each at rules 18 and 146
+  (`not_eventuallyPeriodic_observedColumn_f18_reaches_oneParity`,
+  `not_eventuallyPeriodic_observedColumn_f146_reaches_oneParity`). Boundary:
+  no period or onset; an odd cell of a doubled state and a seed with adjacent
+  set cells whose orbit is not shown to reach one parity are not decided.
+  *Rule Space* Proposition 4.8.
+- **A stretch at two seams** (`StretchColumns.lean`): the stretch of a
+  configuration shifts it left of one cell and right of another and keeps it
+  between (`stretch`); if one period of a quiescent rule takes a finite seed's
+  state to its stretch, and the state agrees with its shifts near the two
+  seams, every column of the orbit is eventually periodic
+  (`eventuallyPeriodic_observedColumn_of_stretch`), with its instance at
+  rule 50 from the single seed
+  (`eventuallyPeriodic_observedColumn_wolframRule50_single`).
+  *Rule Space* Proposition 4.6.
+- **The stretch census** (`StretchColumns.lean`, `StretchCensus.lean`,
+  `StretchCensusData.lean`): the stretch's hypotheses decided from a seed
+  list (`listSeed`, `stretchCheck`), an accepted check making every column
+  eventually periodic (`eventuallyPeriodic_observedColumn_of_stretchCheck`),
+  and every column eventually periodic at the thirty-two tables of
+  `stretchTables` from the sixteen seeds of diameter at most five of
+  `smallSeeds` (`eventuallyPeriodic_observedColumn_stretchCensus`), by
+  certificates the kernel decides one table at a time. *Rule Space*
+  Proposition 4.7. Boundary: a finite census; no seed outside the list.
+- **A blocking window** (`BlockingWindow.lean`): a window whose words step alike under every
+  pair of outside cells and return to an earlier word, a blocking word in the literature's sense,
+  decided from a seed list (`blockingCheck`), has every column at its cells eventually periodic
+  (`eventuallyPeriodic_observedColumn_of_blockingCheck`); the check rejects where the outside
+  cells matter (`blockingCheck_f90_single_eq_false`). The column at cell `0` is eventually
+  periodic at the twenty-five pairs of `blockingPairs`, tables 94 and 218
+  (`eventuallyPeriodic_observedColumn_blockingCensus`). *Rule Space* Proposition 4.12. Boundary:
+  sufficient and not necessary; one column at the listed pairs.
 - **The Markov error count: a predictor on the last symbols, and what bounds
   its errors** (`MarkovErrorCount.lean`): a sequence is eventually exact at
   order `k` when one fixed function of its last `k` symbols gives the next
@@ -714,6 +812,32 @@ statement's number in the library's paper is given where it has one.
   where rule 90's is; at speed one from cell 0 the ray is eventually periodic
   (`observedRationalRay_f126_single_guard_one`). *Rule Space* Proposition 5.34. Boundary: the
   single seed.
+- **Rule 126 carried onto rule 18** (`Rule126Difference.lean`): one step of rule 102, the
+  difference of neighbouring cells, carries rule 126 onto rule 18 (`semiconj_f102_f126_f18`) and
+  is injective on finite configurations (`finRule_f102_injective`); from it the column of rule 18
+  at cell 0 from the seed `11` reads 1 exactly at the steps `t` with `t + 2` a power of two
+  (`observedColumn_f18_eleven_eq_one_iff`), from `1001` exactly where `t + 4` is a power of two
+  of exponent at least 2 (`observedColumn_f18_one_zero_zero_one_eq_one_iff`), and neither is
+  eventually periodic (`not_eventuallyPeriodic_observedColumn_f18_of_f126`). *Rule Space*
+  Proposition 4.9. Boundary: the two seeds, at cell 0.
+- **Rule 126 from `101` read through rule 90, and rule 18 from `1111`**
+  (`Rule126Difference.lean`): at every odd step `2v + 1`, rule 126 from the seed `101` at cells
+  1 and 3 reads rule 90 from the seed `111` at step `v`, doubled toward cell 2 as the single
+  seed's even rows are doubled toward cell 0 (`f126_one_zero_one_two_mul_add_one`); from it the
+  column of rule 18 at cell 0 from the seed `1111` reads 1 at the step `4u + 2` exactly when
+  `4u + 4` is a power of two
+  (`observedColumn_f18_one_one_one_one_four_mul_add_two_eq_one_iff`), and is not eventually
+  periodic (`not_eventuallyPeriodic_observedColumn_f18_one_one_one_one`). *Rule Space*
+  Proposition 4.10. Boundary: the steps `4u + 2` of the column, at cell 0.
+- **Rule 146 run as rule 18** (`Rule146AsRule18.lean`): no image of rule 18 holds three adjacent
+  set cells (`noThreeAdjacentOnes_finRule_f18`), and rules 146 and 18 take the same step from every
+  finite configuration without them (`finRule_f146_eq_f18_of_noThreeAdjacentOnes`), so the same
+  orbit (`iterate_f146_eq_f18_of_noThreeAdjacentOnes`); rule 18 sends the seeds `1101`, `1011`
+  and `1111` to one state (`finRule_f18_listSeed_merge`). From these, the column at cell 0 is not
+  eventually periodic at rule 18 from `1101` and `1011`
+  (`not_eventuallyPeriodic_observedColumn_f18_odd_weight`) and at rule 146 from `11`, `1001`,
+  `1101` and `1011` (`not_eventuallyPeriodic_observedColumn_f146`). *Rule Space* Proposition 4.11.
+  Boundary: the six seeds, at cell 0; the seed `1111` at rule 146 is not reached.
 - **Rays of rule 150 above speed one half** (`Rule150Rays.lean`): `2^j` steps of rule 150 read
   each cell and the two cells `2^j` away (`iterate_two_pow_f150`, at the quiescence `hq150`), so
   from the single seed the center column reads 1 at every step (`f150_single_apply_zero`) and the
@@ -893,7 +1017,15 @@ statement's number in the library's paper is given where it has one.
   into one (`decim_decim`), so they stack into a tower whose law never
   changes. Rule 30 admits no map on the even cells carrying its second
   iterate (`not_exists_decim_law_f30`). *Rule Space* Proposition
-  5.7.
+  5.7. The map is not injective at any positive `M`
+  (`not_injective_decim`), and its fibers on the light cone have an unbounded
+  growing width, finite at every time (`decim_f90_factor`,
+  `growingWidth_lightCone_unbounded_f90`, `growingWidth_lightCone_ne_top` over
+  `finite_lightCone`; `DecimationFactor.lean`), whereas the merge quotient of
+  an injective update is the system itself read by a bijection
+  (`merges_iff_eq_of_injective`, `mergeMk_bijective_of_injective`; at rules 90
+  and 106, `merges_finRule_f90_iff_eq` and `merges_finRule_f106_iff_eq`).
+  These last statements are in no paper.
 - **Rule 90's tower at the other reproducing rules** (`EmulationTower.lean`):
   the one-parity states of a rule agreeing with rule 90 off adjacent cells,
   the doubled states of a rule agreeing with it at equal adjacent cells, and
@@ -1280,15 +1412,29 @@ statement's number in the library's paper is given where it has one.
   the nonzero translates of doubled patterns (`DoubledAgree.reproduces_iff_dbl`); the positive gap
   is load-bearing in the odd-run bound (`oddRunCountCopies_gap_load_bearing`). The two copies
   bounds are proved (`kinkCountCopies`, `oddRunCountCopies`); the two monotonicities are stated
-  here and proved in `KinkMonotone.lean` at six rules and in `OddRunMonotone.lean` at rule 126.
-- **The kink count never increases at six rules** (`KinkMonotone.lean`): the kink count of a
-  state is the number of kinks of its configuration in the classical package's sense
-  (`kinkCount_eq_kinks`), so a rule agreeing with rule 90 off adjacent cells that sends at most
-  one of `011` and `110` to one never increases it (`AgreesOffAdjacent.kinkCountMono`, by the
-  classical package's `Rule18Kinks.kinks_step_le_of_agree`; rule 18's instance is Sabrié and
-  Törmä's proposition), six rules in all (`card_agreesOffAdjacent_atMostOne`): 18, 26, 82, 146,
-  154 and 210 (`kinkCountMono_f18` to `kinkCountMono_f210`), while rules 218 and 90 create kinks
-  (`not_kinkCountMono_f218`, `not_kinkCountMono_f90`); so at those six rules the patterns
+  here and proved in `KinkMonotone.lean` at six rules of the class, among forty-eight rules in
+  all, and in `OddRunMonotone.lean` at rule 126.
+- **Rule 222 and its dilation onto rule 254** (`Dilation.lean`): rule 254, the
+  dilation, after rule 222 is rule 254 after rule 254 at every finite
+  configuration (`finRule_f254_finRule_f222`, with `f222` and `f254`), the
+  dilation is not injective (`not_injective_finRule_f254`), and the growing
+  part of rule 222 under the support diameter is the nonzero states
+  (`growingPart_f222_eq_ne_zero`); from the configurations of an `n`-cell
+  window, `n` steps of rule 254 reach at most `(n + 1)²` configurations
+  (`encard_image_iterate_f254_lightCone_le`), while at least `2^⌊(n − 3)/2⌋`
+  blocks with single holes stay apart under every number of steps of rule 222
+  (`exists_finset_injOn_iterate_f222`). *Guests* Proposition 7.29.
+- **The kink count never increases at forty-eight rules** (`KinkMonotone.lean`): the kink
+  count of a state is the number of kinks of its configuration in the classical package's sense
+  (`kinkCount_eq_kinks`), so a rule sending `000` and `010` to zero and at most one of `011` and
+  `110` to one never increases it (`kinkCountMono_of_atMostOne`, by the classical package's
+  `Rule18Kinks.kinks_step_le`; rule 18's instance is Sabrié and Törmä's proposition), forty-eight
+  rules in all (`card_kinkCountMono_class`), one of them outside the eight agreeing with rule 90
+  off adjacent cells (`kinkCountMono_of_atMostOne_nonvacuous`), while rule 6, which sends `010`
+  to one, creates a kink (`not_kinkCountMono_f6`). Six of the forty-eight agree with rule 90 off
+  adjacent cells (`AgreesOffAdjacent.kinkCountMono`, `card_agreesOffAdjacent_atMostOne`): 18, 26,
+  82, 146, 154 and 210 (`kinkCountMono_f18` to `kinkCountMono_f210`), while rules 218 and 90
+  create kinks (`not_kinkCountMono_f218`, `not_kinkCountMono_f90`); so at those six rules the patterns
   reproduced are exactly the nonzero one-parity patterns
   (`AgreesOffAdjacent.reproduces_iff_oneParity_of_atMostOne`, `reproduces_iff_oneParity_f18` to
   `reproduces_iff_oneParity_f210`), the iff theorem's hypotheses met at once at rule 18
@@ -1360,13 +1506,135 @@ statement's number in the library's paper is given where it has one.
   *Rule Space* Proposition 5.9. Boundary:
   neither end of the bracket is shown exact; three patterns only.
 
+### Sliding block codes a step conserves
+
+A sliding block code of window `L` reads each cell of its image from the `L`
+cells starting there through a local rule sending the zero window to zero; a
+step conserves it when the code of a state and of its image agree at every
+finite configuration. These modules settle, table by table, which quiescent
+rules conserve a code that is not zero and at which no code is read with an
+injective law.
+
+- **Rule 222 conserves its hole pairs** (`HolePairs.lean`): the code of
+  window five marking the pattern `10101` (`holePairs`, with
+  `holePairs_apply`, `holePairs_zero` and `holePairs_translate`) is
+  unchanged by every step of rule 222 (`holePairs_finRule_f222`). *Guests*
+  Proposition 7.32.
+- **A local criterion and six further tables** (`BlockCode.lean`): the code
+  of a local rule (`blockCode`, `blockCode_apply`) is conserved by a step
+  where the local rule agrees on the image of every window of `L + 2` cells
+  and on its middle `L` cells (`blockCode_finRule`), and a step carries one
+  code to another under the two-rule form of the same identity
+  (`blockCode_finRule_carry`), the hypotheses of each met at once
+  (`blockCode_finRule_nonvacuous`, `blockCode_finRule_carry_nonvacuous`);
+  tables 206, 220, 202, 216, 50 and 178 conserve a code that is not zero
+  (`blockCode_finRule_f206` to `blockCode_finRule_f178`). At tables 50 and
+  178 a step swaps the codes of `100110` and `011001` (`slipPhases`,
+  `slipPhases_finRule_f50`, `slipPhases_finRule_f178`), a nonzero pair is
+  not its own swap (`swap_slipPhases_ne`), and the growing part is the
+  nonzero states there and at tables 206 and 220
+  (`growingPart_f50_eq_ne_zero` and its three twins), while at tables 202
+  and 216 a state holding two adjacent set cells is in it
+  (`mem_growingPart_f202_of_pair`, `mem_growingPart_f216_of_pair`).
+  *Guests* Propositions 7.33, 7.34 and 7.37.
+- **A table forcing a one from one end conserves no code but zero**
+  (`ForcingTables.lean`): at a quiescent table where every neighbourhood with
+  a set left cell gives `1`, or every one with a set right cell, a run of set
+  cells overwrites any window at speed one, so a conserved code of any
+  window is zero (`blockCode_eq_zero_of_leftForcing`,
+  `blockCode_eq_zero_of_rightForcing`, the hypotheses met at once by
+  `blockCode_eq_zero_of_leftForcing_nonvacuous`); table 50, forcing on
+  neither side, conserves a nonzero code (`blockCode_forcing_load_bearing`),
+  and the ten forcing tables 242, 246, 248, 250, 252, 254, 186, 190, 234 and
+  238 conserve none (`blockCode_eq_zero_f242` to
+  `blockCode_eq_zero_f238`). *Guests* Proposition 7.35.
+- **A checkerboard that invades any window** (`CheckerboardFront.lean`):
+  where six checkerboard cells followed by any four give, after three steps,
+  four checkerboard cells of the same phase (`CheckerboardFrontLeft`, a
+  finite identity over `windowStep`, and its mirror
+  `CheckerboardFrontRight`), a conserved code of any window is zero
+  (`blockCode_eq_zero_of_checkerboardFrontLeft`,
+  `blockCode_eq_zero_of_checkerboardFrontRight`, the hypotheses met at once
+  by `blockCode_eq_zero_of_checkerboardFrontLeft_nonvacuous`, table 50 the
+  load-bearing case by `blockCode_checkerboard_load_bearing`); tables 114
+  and 58 conserve none (`blockCode_eq_zero_f114`, `blockCode_eq_zero_f58`).
+  *Guests* Proposition 7.36.
+- **Clearing windows excludes codes, from rule 18 to tables 146 and 126**
+  (`ConservedCodeTransfer.lean`, `Rule18Clearing.lean`): a table clears
+  windows when the cells of any finite configuration on an interval extend
+  to one whose orbit reads zeros there at some time (`ClearsWindows`), and
+  such a table conserves no code but zero
+  (`ClearsWindows.conservesNoCode`, into `ConservesNoCode`); table 146 is
+  rule 18 once no three adjacent set cells remain, and table 126 is carried
+  onto rule 18 by differences of neighbouring cells, so both inherit rule
+  18's verdict (`conservesNoCode_f146`, `conservesNoCode_f126`), the
+  hypothesis neither empty nor universal (`clearsWindows_wolframRule_zero`,
+  `not_clearsWindows_f206`). Jen's kink annihilation gives that rule 18
+  clears windows (`clearsWindows_f18_of_jenAnnihilation`), and with its
+  classical proof (the classical package's `Rule18Kinks.jenAnnihilation`)
+  rules 18, 146 and 126 conserve no code but zero with no hypothesis
+  (`clearsWindows_f18`, `conservesNoCode_f18_f146_f126'`). *Guests*
+  Proposition 7.38.
+- **Rules 26 and 82 clear windows** (`Rule26Clearing.lean`,
+  `Rule26Fronts.lean`): at a rule agreeing with rule 90 off adjacent cells,
+  a held suffix of one parity clears any window
+  (`exists_iterate_zero_of_oneParitySuffix`, with
+  `exists_iterate_zero_of_oneParitySuffix_nonvacuous`), and clearing passes
+  to the mirror rule (`ClearsWindows.mirror`, `f82_eq_mirror_f26`). At rule
+  26 a spaced state, holding no word `1 0^(2r) 1 1` (`Spaced`), keeps its
+  suffix past the last kink (`spacedHeld_f26`), and every finite
+  configuration reaches a spaced state (`reachesSpaced_f26`), the kink count
+  never increasing; together they give the held suffix
+  (`ReachesSpaced.eventuallyOneParitySuffix`), so rules 26 and 82 clear
+  windows and conserve no code but zero with no hypothesis
+  (`clearsWindows_f26`, `clearsWindows_f82`, `conservesNoCode_f26_f82`).
+  *Guests* Proposition 7.39.
+- **A block of two set cells is a wall** (`WalledTables.lean`): at a table
+  where a set left cell gives `1` and `011` gives `1`, `L` steps take the
+  state with walls `11` around any window and the state with the zero window
+  there to one state (`iterate_walled_eq_of_leftForcing`, over `walled`, and
+  its mirror `iterate_walled_eq_of_rightForcing`); a code read through a
+  semiconjugacy with an injective law, on fibers holding every walled state,
+  is then zero (`blockCode_eq_zero_of_walled_merges`, with
+  `blockCode_eq_zero_of_walled_merges_nonvacuous`), so at tables 234, 238,
+  248, 250, 252 and 254 no nonzero code is read with an injective law on the
+  light cone restricted to the growing part
+  (`blockCode_eq_zero_of_injective_law_f234` to
+  `blockCode_eq_zero_of_injective_law_f254`); the injectivity is needed
+  (`blockCode_walled_injective_load_bearing`). *Guests* Proposition 7.40.
+- **An injective law fixes every reading at rule 206** (`ConservedReadings.lean`, with
+  `MergeQuotient.lean`): under a factor with an injective law, readings along an orbit that agree
+  after `k + p` and after `k` steps agree after `p` steps and at the start
+  (`Semiconj.eq_of_iterate_eq`, *Rule Space* Proposition 2.6(iv)); at table 206 every sliding
+  block code fixing zero read with an injective law on the light cone restricted to the growing
+  part is conserved by a step, at every window
+  (`blockCode_finRule_eq_of_injective_law_f206`), so the law fixes the code's values at the stage states
+  (`law_apply_blockCode_eq_of_injective_law_f206`), the hypotheses met by the code of the
+  pattern `10` (`blockCode_finRule_eq_of_injective_law_f206_nonvacuous`). Boundary: table 206
+  alone.
+- **A state of rule 188 is decided by its ends** (`EndsDetermine.lean`): two
+  finite configurations with the same ends and the same cell before the
+  right end merge at rule 188 (`EndsDetermine`, proved as
+  `endsDetermine_f188`), every nonzero state is in its growing part
+  (`mem_growingPart_f188`), and a code read with an injective law on fibers
+  holding a family of states that read every window and merge with the
+  state of the zero window is zero (`blockCode_eq_zero_of_window_merges`,
+  over `markedWindow` and `markedWindowLeft`, with
+  `blockCode_eq_zero_of_window_merges_nonvacuous`); so at tables 188 and 230
+  no nonzero code is read with an injective law on the light cone restricted
+  to the growing part (`blockCode_eq_zero_of_injective_law_f188'`,
+  `blockCode_eq_zero_of_injective_law_f230'`, the conditional forms'
+  hypotheses met at once by `blockCode_eq_zero_of_injective_law_f188_nonvacuous`
+  and `blockCode_eq_zero_of_injective_law_f230_nonvacuous`). *Guests*
+  Proposition 7.41.
+
 ## Scope, and related formalizations
 
-The carrier is the one every library of cellular automata on the line starts
+The carrier is the one most libraries of cellular automata on the line start
 from, a function from the integers to a finite alphabet, and the statements
-here are about one thing those libraries do not treat: what the orbits of the
-radius-one rules do — growth, eventual periodicity along columns, windows and
-rays, reproduction, erasure. Read at the sources on 2026-10-09:
+here are about what the orbits of the radius-one rules do — growth, eventual
+periodicity along columns, windows and rays, reproduction, erasure. Read at the
+sources on 2026-10-09:
 [hediet/lean-cellular-automata](https://github.com/hediet/lean-cellular-automata)
 defines a radius-one automaton over an alphabet with an input embedding and an
 output projection, its step the same neighbourhood update as here, and studies
@@ -1393,6 +1661,23 @@ seed that no two adjacent columns are both eventually periodic and that every
 right diagonal is periodic; no statement of this library was found in any
 prover.
 
+A third read on 2026-11-17 found Lean repositories, each begun after this
+library, that work at rule `30` and its neighbours. Wolfram Institute's
+[Rule30PrizeKit](https://github.com/WolframInstitute/Rule30PrizeKit) and
+`DigitalEuan/GLM` number the rules as here, prove that reflection and
+complementation conjugate the dynamics, and count the 88 classes, without their
+sizes; `DigitalEuan/GLM` and `afflom/rule30` count the left-permutive rules; the
+kit proves that rule `30` is surjective.
+[lhallee/rule30-open](https://github.com/lhallee/rule30-open) proves, nine days
+before `MirrorColumns.lean` here did, that under rules `90` and `150` a column of
+a finitely supported row is eventually periodic exactly when the row is
+mirror-symmetric about it, and that from the single cell the center is the only
+such column; this package requires it and proves its own two equivalences from those
+statements. `wjsuijlenh/cellauto` and Wolfram Institute's CellularAutomaton repository
+take finite rows with a boundary rather than the line. No statement of growth,
+rays, windows, reproduction, erasure or the Markov error count was found in any
+of them.
+
 A preprint read on 2026-10-13, Chan-López and Martín-Ruiz (2026), gives rule
 22's rows from a single cell in closed form; the classical package carries
 that form on every configuration supported in one coset of `4ℤ`, and the
@@ -1416,7 +1701,7 @@ library content the paper does not state.
 
 - No `sorry`, `admit`, or `native_decide`; standard axioms only
   (`propext`, `Classical.choice`, `Quot.sound`).
-- **Build-enforced axiom hygiene**: 919 `#guard_msgs in #print axioms` guards
+- **Build-enforced axiom hygiene**: 1095 `#guard_msgs in #print axioms` guards
   assert each capstone's exact axiom set — most in the audit modules
   `Nonautonomous/AxiomAudit.lean` and `ECA/AxiomAudit.lean`, the
   rest in-file in the modules they certify; `lake build` fails on any drift.
@@ -1455,3 +1740,6 @@ and `CITATION.cff`. Code is Apache-2.0 (`LICENSE`). Developed by Mykola
 Palamarchuk (independent researcher), with substantial AI assistance (Claude
 Code, Anthropic) under the author's direction and review — every result is
 machine-checked by Lean.
+
+The program these libraries belong to is described at
+[www.livid.work/projects/reflective-subsystems](https://www.livid.work/projects/reflective-subsystems/).

@@ -1,5 +1,5 @@
 name = "elementary_cellular_automata"
-version = "0.3.0"
+version = "0.4.0"
 keywords = ["math", "cellular-automata", "elementary-cellular-automata", "learning-theory"]
 
 [leanOptions]
@@ -18,18 +18,23 @@ rev = "v4.35.0"
 [[require]]
 name = "classical_upstream"
 git = "https://github.com/lividgreen/lean-classical-upstream"
-rev = "v0.4.0"
+rev = "v0.5.0"
 
+# Wolfram Institute's `Rule30PrizeKit` comes with it, inherited; it needs no Mathlib.
+[[require]]
+name = "rule30open"
+git = "https://github.com/lhallee/rule30-open"
+rev = "a3b4a64f8423bbc8380149a021f39e528b4ea189"
+
+# In every library below the glob includes the root itself (`<Root>.*` matches the root and its
+# submodules, `<Root>.+` would exclude the root): Lake only counts a root that some glob matches,
+# and doc-gen4 documents the roots and their import closure, so a missed root gives empty docs.
 [[lean_lib]]
 name = "ECA"
-# The glob must include the root itself (`<Root>.*` matches the root and its submodules),
-# for the same reason as the `ALT` library of the package that requires this one.
 roots = ["ECA"]
 globs = ["ECA.*"]
 
 [[lean_lib]]
 name = "Nonautonomous"
-# The glob must include the root itself (`<Root>.*` matches the root and its submodules),
-# for the same reason as the `ECA` library above.
 roots = ["Nonautonomous"]
 globs = ["Nonautonomous.*"]

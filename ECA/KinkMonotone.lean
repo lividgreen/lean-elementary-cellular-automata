@@ -9,26 +9,32 @@ public import ErgodicTheory.Rule18Kinks
 import all ECA.DefectCounts
 
 /-!
-# The kink count never increases at six rules that agree with rule `90` off adjacent cells
-([RuleSpace] §5)
+# The kink count never increases at the forty-eight rules fixing `000` and `010` ([RuleSpace] §5)
 
 [RuleSpace] §5 Proposition 5.25 shows that a rule agreeing with rule `90` off adjacent cells
 reproduces every nonzero pattern whose set cells differ by even amounts, and `ECA.DefectCounts`
 shows that such a rule whose kink count never increases in one step reproduces nothing else. This
-module shows the monotonicity at the six of the eight rules of the class that do not send both
-neighbourhoods `011` and `110` to one, and with it the converse at those six.
+module shows the monotonicity at every rule that fixes `000` and `010` at zero and does not send
+both neighbourhoods `011` and `110` to one, a class of forty-eight rules, which says which rules
+keep kinks. The reproduction equivalence stays at the six rules of the class that also agree with
+rule `90` off adjacent cells, where `ECA.ParityEmulation` supplies the reproduction.
 
 * `FiniteConfiguration.kinkCount_eq_kinks` — the kink count of a finitely supported state is the
   number of kinks of its configuration, as counted by `Rule18Kinks.kinks`.
-* `LocalRule.AgreesOffAdjacent.kinkCountMono` — a rule that agrees with rule `90` off adjacent cells
-  and sends at most one of `011` and `110` to one never increases the kink count, by
-  `Rule18Kinks.kinks_step_le_of_agree`; rule `18` is Sabrié and Törmä's proposition
+* `LocalRule.kinkCountMono_of_atMostOne` — a rule that fixes `000` and `010` at zero and sends at
+  most one of `011` and `110` to one never increases the kink count, by `Rule18Kinks.kinks_step_le`
+  ([RuleSpace] §5 Proposition 5.27); `card_kinkCountMono_class` counts the class, and
+  `LocalRule.kinkCountMono_of_atMostOne_nonvacuous` meets the hypotheses at a rule outside the eight
+  agreeing with rule `90` off adjacent cells.
+* `LocalRule.AgreesOffAdjacent.kinkCountMono` — its instance at a rule that agrees with rule `90`
+  off adjacent cells; rule `18` is Sabrié and Törmä's proposition
   (`Rule18Kinks.kinks_step_rule18_le`).
 * `kinkCountMono_f18`, `kinkCountMono_f26`, `kinkCountMono_f82`, `kinkCountMono_f146`,
-  `kinkCountMono_f154`, `kinkCountMono_f210` — the six rules of the class meeting the condition
+  `kinkCountMono_f154`, `kinkCountMono_f210` — the six rules of that instance
   (`card_agreesOffAdjacent_atMostOne`).
-* `not_kinkCountMono_f218`, `not_kinkCountMono_f90` — the exclusion is load-bearing: rule `218`
-  sends both neighbourhoods to one and rule `90` is the linear rule, and each creates kinks.
+* `not_kinkCountMono_f218`, `not_kinkCountMono_f90`, `not_kinkCountMono_f6` — the hypotheses are
+  load-bearing: rule `218` sends both neighbourhoods to one, rule `6` sends `010` to one, and rule
+  `90` is the linear rule, and each creates kinks.
 * `LocalRule.AgreesOffAdjacent.reproduces_iff_oneParity_of_atMostOne` and
   `reproduces_iff_oneParity_f18`, `_f26`, `_f82`, `_f146`, `_f154`, `_f210` — **at these rules
   the patterns reproduced are exactly the nonzero ones of one parity**
@@ -65,24 +71,46 @@ theorem FiniteConfiguration.kinkCount_eq_kinks (s : FiniteConfiguration) :
     push Not at hcon
     exact hm (hbet m hcon.1 hcon.2)
 
-/-- **A rule agreeing with rule `90` off adjacent cells that sends at most one of the neighbourhoods
-`011` and `110` to one never increases the kink count** ([RuleSpace] §5 Proposition 5.25):
-`Rule18Kinks.kinks_step_le_of_agree` through the kink count of a state. -/
-theorem LocalRule.AgreesOffAdjacent.kinkCountMono (f : LocalRule) (h : AgreesOffAdjacent f)
-    (hone : ¬ (f 0 1 1 = 1 ∧ f 1 1 0 = 1)) : KinkCountMono f h.1 := by
+/-- **A rule that fixes `000` and `010` at zero and sends at most one of the neighbourhoods `011`
+and `110` to one never increases the kink count** ([RuleSpace] §5 Proposition 5.27):
+`Rule18Kinks.kinks_step_le` through the kink count of a state. -/
+theorem LocalRule.kinkCountMono_of_atMostOne (f : LocalRule) (h0 : f 0 0 0 = 0)
+    (h010 : f 0 1 0 = 0) (hone : ¬ (f 0 1 1 = 1 ∧ f 1 1 0 = 1)) : KinkCountMono f h0 := by
   intro s
   rw [kinkCount_eq_kinks, kinkCount_eq_kinks]
-  have e := coe_finRule_iterate f h.1 1 s
+  have e := coe_finRule_iterate f h0 1 s
   rw [Function.iterate_one, Function.iterate_one] at e
   rw [e]
-  exact Rule18Kinks.kinks_step_le_of_agree f h.1 h.2.1 h.2.2.1 h.2.2.2.1 h.2.2.2.2 hone ⇑s
+  exact Rule18Kinks.kinks_step_le f h0 h010 hone ⇑s
     (s.support.finite_toSet.subset fun i hi => Finsupp.mem_support_iff.mpr hi)
+
+/-- **A rule agreeing with rule `90` off adjacent cells that sends at most one of the neighbourhoods
+`011` and `110` to one never increases the kink count** ([RuleSpace] §5 Proposition 5.25):
+the instance of `LocalRule.kinkCountMono_of_atMostOne` at such a rule. -/
+theorem LocalRule.AgreesOffAdjacent.kinkCountMono (f : LocalRule) (h : AgreesOffAdjacent f)
+    (hone : ¬ (f 0 1 1 = 1 ∧ f 1 1 0 = 1)) : KinkCountMono f h.1 :=
+  LocalRule.kinkCountMono_of_atMostOne f h.1 h.2.2.2.1 hone
 
 /-- Six of the eight rules agreeing with rule `90` off adjacent cells do not send both `011` and
 `110` to one. -/
 theorem card_agreesOffAdjacent_atMostOne :
     Fintype.card {f : LocalRule // AgreesOffAdjacent f ∧ ¬ (f 0 1 1 = 1 ∧ f 1 1 0 = 1)} = 6 := by
   decide
+
+/-- Forty-eight local rules fix `000` and `010` at zero and send at most one of the neighbourhoods
+`011` and `110` to one ([RuleSpace] §5 Proposition 5.27). -/
+theorem card_kinkCountMono_class :
+    Fintype.card {f : LocalRule // f 0 0 0 = 0 ∧ f 0 1 0 = 0 ∧ ¬ (f 0 1 1 = 1 ∧ f 1 1 0 = 1)} =
+      48 := by
+  decide
+
+/-- The hypotheses of `LocalRule.kinkCountMono_of_atMostOne` are met by a rule outside the eight
+agreeing with rule `90` off adjacent cells: the rule sending only `001` to one, rule `2`. -/
+theorem LocalRule.kinkCountMono_of_atMostOne_nonvacuous :
+    ∃ f : LocalRule, f 0 0 0 = 0 ∧ f 0 1 0 = 0 ∧ ¬ (f 0 1 1 = 1 ∧ f 1 1 0 = 1) ∧
+      ¬ AgreesOffAdjacent f :=
+  ⟨fun a b c => if a = 0 ∧ b = 0 ∧ c = 1 then 1 else 0, by decide, by decide, by decide,
+    by unfold AgreesOffAdjacent; decide⟩
 
 /-! ## The six rules -/
 
@@ -130,11 +158,12 @@ theorem kinkCountMono_f210 : KinkCountMono f210 hq210 :=
 
 /-- The state with set cells exactly `S`. -/
 private noncomputable abbrev cellsState (S : Finset ℤ) : FiniteConfiguration :=
-  ∑ i ∈ S, Finsupp.single i (1 : ZMod 2)
+  Finsupp.indicator S fun _ _ => (1 : ZMod 2)
 
 private theorem cellsState_apply (S : Finset ℤ) (j : ℤ) :
     cellsState S j = if j ∈ S then 1 else 0 := by
-  simp [cellsState, Finsupp.finsetSum_apply, Finsupp.single_apply]
+  rw [Finsupp.indicator_apply]
+  simp
 
 private theorem kinkCount_cellsState (S : Finset ℤ) : kinkCount (cellsState S) =
     (S.filter fun i => ∃ j ∈ S, i < j ∧ Odd (j - i) ∧ ∀ m ∈ S, m ≤ i ∨ j ≤ m).card :=
@@ -150,6 +179,21 @@ theorem not_kinkCountMono_f218 : ¬ KinkCountMono f218 hq218 := by
     simp only [cellsState_apply, Finset.mem_insert, Finset.mem_singleton]
     split_ifs <;> first | omega | decide
   have := h (cellsState {0, 1})
+  rw [himg, kinkCount_cellsState, kinkCount_cellsState] at this
+  revert this
+  decide
+
+/-- **Rule `6` creates kinks**: it sends `010` to one and neither `011` nor `110`, and the single
+set cell, no kink, steps to two adjacent set cells, one kink. So the hypothesis on `010` is
+load-bearing. -/
+theorem not_kinkCountMono_f6 : ¬ KinkCountMono f6 hq6 := by
+  intro h
+  have himg : finRule f6 hq6 (cellsState {0}) = cellsState {-1, 0} := by
+    ext j
+    rw [finRule_apply]
+    simp only [cellsState_apply, Finset.mem_insert, Finset.mem_singleton]
+    split_ifs <;> first | omega | decide
+  have := h (cellsState {0})
   rw [himg, kinkCount_cellsState, kinkCount_cellsState] at this
   revert this
   decide
@@ -316,5 +360,25 @@ set_option linter.style.longLine false in
 /-- info: 'ECA.LocalRule.AgreesOffAdjacent.reproduces_iff_oneParity_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms ECA.LocalRule.AgreesOffAdjacent.reproduces_iff_oneParity_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.kinkCountMono_of_atMostOne' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.kinkCountMono_of_atMostOne
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.card_kinkCountMono_class' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.card_kinkCountMono_class
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.not_kinkCountMono_f6' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.not_kinkCountMono_f6
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.kinkCountMono_of_atMostOne_nonvacuous' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.kinkCountMono_of_atMostOne_nonvacuous
 
 end ECA

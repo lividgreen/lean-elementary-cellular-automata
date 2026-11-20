@@ -45,6 +45,8 @@ never moves and the growing width is `0`.
   the `(1, 1)` instance, `+ 2 k`.
 * `growingPart_eq_ne_zero` — at exact moves `(1, 1)` the growing part under
   `FiniteConfiguration.diam` is exactly `{s | s ≠ 0}`.
+* `encard_lightCone` — the light cone's count: the fiber at `t` of the family from the `n`-cell
+  window has exactly `2 ^ (n + 2 * t)` states.
 * `positivelyInvariant_lightCone` / `growingWidth_lightCone_mono` — the light-cone family is
   positively invariant, so the growing width along it is monotone
   (`Nonautonomous.growingWidth_mono`, nothing further).
@@ -117,6 +119,38 @@ the fiber at `t` is the states supported in the window widened by `t` cells at e
 `[-t, n + t)`. -/
 def lightCone (n t : ℕ) : Set FiniteConfiguration :=
   {s | ∀ i ∈ s.support, -(t : ℤ) ≤ i ∧ i < (n : ℤ) + t}
+
+/-- **The light cone's count** ([RuleSpace] §2 Definition 2.4): the fiber at `t` of the
+light-cone family of the `n`-cell window has exactly `2 ^ (n + 2 * t)` states, the configurations
+supported in the `n + 2 * t` cells from `-t` to `n + t - 1`, in bijection with the functions from
+those cells to the two-element field. -/
+theorem encard_lightCone (n t : ℕ) : (lightCone n t).encard = 2 ^ (n + 2 * t) := by
+  let e : Fin (n + 2 * t) → ℤ := fun k => (k : ℤ) - t
+  have he : Function.Injective e := fun a b h => Fin.ext (by simpa [e] using h)
+  have hmem : ∀ i : ℤ, i ∈ Set.range e ↔ -(t : ℤ) ≤ i ∧ i < (n : ℤ) + t := by
+    intro i
+    constructor
+    · rintro ⟨k, rfl⟩
+      have := k.isLt
+      constructor <;> simp only [e] <;> omega
+    · rintro ⟨h1, h2⟩
+      refine ⟨⟨(i + t).toNat, by omega⟩, ?_⟩
+      simp only [e]
+      omega
+  have : Finite (Set.range e) := Set.finite_range e
+  have hset : lightCone n t = {f : FiniteConfiguration | (f.support : Set ℤ) ⊆ Set.range e} := by
+    ext f
+    simp only [lightCone, Set.mem_ofPred_eq, Set.subset_def, Finset.mem_coe, hmem]
+  have hcard : Nat.card (Set.range e) = n + 2 * t := by
+    rw [← Nat.card_congr (Equiv.ofInjective e he), Nat.card_eq_fintype_card, Fintype.card_fin]
+  rw [hset, Set.encard]
+  have hq := ENat.card_congr ((Finsupp.restrictSupportEquiv (Set.range e) (ZMod 2)).trans
+    Finsupp.equivFunOnFinite)
+  rw [show ENat.card ↑{f : FiniteConfiguration | (f.support : Set ℤ) ⊆ Set.range e} =
+    ENat.card {f : FiniteConfiguration // (f.support : Set ℤ) ⊆ Set.range e} from rfl, hq,
+    ENat.card_eq_coe_natCard, Nat.card_fun, Nat.card_zmod, hcard]
+  push_cast
+  rfl
 
 /-- The zero state has diameter `0`: its support is empty. -/
 private theorem FiniteConfiguration.diam_zero : diam (0 : FiniteConfiguration) = 0 := by
@@ -600,3 +634,8 @@ set_option linter.style.longLine false in
 /-- info: 'ECA.growingWidth_lightCone_rule240_eq_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms ECA.growingWidth_lightCone_rule240_eq_zero
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.encard_lightCone' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.encard_lightCone

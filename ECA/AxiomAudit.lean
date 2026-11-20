@@ -3,6 +3,13 @@ module
 public import ECA.WolframNumber
 public import ECA.WolframSymmetries
 public import ECA.Surjectivity
+public import ECA.BlockCode
+public import ECA.CheckerboardFront
+public import ECA.ForcingTables
+public import ECA.HolePairs
+public import ECA.WalledTables
+public import ECA.EndsDetermine
+public import ECA.ConservedReadings
 
 /-!
 # Axiom audit for the `ECA` library root
@@ -353,3 +360,329 @@ set_option linter.style.longLine false in
 /-- info: 'ECA.card_support_finRule_ofWolfram_iff' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms ECA.card_support_finRule_ofWolfram_iff
+
+-- The sliding block code of rule `222`'s holes (`ECA/HolePairs.lean`).
+set_option linter.style.longLine false in
+/-- info: 'ECA.holePairs_finRule_f222' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.holePairs_finRule_f222
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.FiniteConfiguration.holePairs_translate' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.FiniteConfiguration.holePairs_translate
+
+-- The sliding block codes a step conserves (`ECA/BlockCode.lean`).
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_finRule' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_finRule
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_finRule_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_finRule_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_finRule_f206' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_finRule_f206
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_finRule_f220' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_finRule_f220
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_finRule_f202' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_finRule_f202
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_finRule_f216' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_finRule_f216
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_finRule_f50' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_finRule_f50
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_finRule_f178' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_finRule_f178
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_finRule_carry' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_finRule_carry
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_finRule_carry_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_finRule_carry_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.slipPhases_finRule_f50' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.slipPhases_finRule_f50
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.slipPhases_finRule_f178' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.slipPhases_finRule_f178
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.swap_slipPhases_ne' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.swap_slipPhases_ne
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.growingPart_f50_eq_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.growingPart_f50_eq_ne_zero
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.growingPart_f178_eq_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.growingPart_f178_eq_ne_zero
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.growingPart_f206_eq_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.growingPart_f206_eq_ne_zero
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.growingPart_f220_eq_ne_zero' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.growingPart_f220_eq_ne_zero
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.mem_growingPart_f202_of_pair' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.mem_growingPart_f202_of_pair
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.mem_growingPart_f216_of_pair' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.mem_growingPart_f216_of_pair
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.mem_growingPart_f202_of_pair_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.mem_growingPart_f202_of_pair_nonvacuous
+
+-- Forcing tables conserve no sliding block code but zero (`ECA/ForcingTables.lean`).
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_leftForcing' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_leftForcing
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_rightForcing' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_rightForcing
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_leftForcing_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_leftForcing_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_forcing_load_bearing' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_forcing_load_bearing
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f242' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f242
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f246' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f246
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f248' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f248
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f250' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f250
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f252' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f252
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f254' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f254
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f186' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f186
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f190' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f190
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f234' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f234
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f238' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f238
+
+-- A checkerboard front conserves no sliding block code but zero (`ECA/CheckerboardFront.lean`).
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_checkerboardFrontLeft' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_checkerboardFrontLeft
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_checkerboardFrontRight' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_checkerboardFrontRight
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f114' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f114
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_f58' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_f58
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_checkerboardFrontLeft_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_checkerboardFrontLeft_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_checkerboard_load_bearing' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_checkerboard_load_bearing
+
+-- A wall of two set cells: six tables carry no sliding block code with an injective law
+-- (`ECA/WalledTables.lean`).
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_walled_merges' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_walled_merges
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_walled_merges_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_walled_merges_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f234' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f234
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f238' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f238
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f248' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f248
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f250' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f250
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f252' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f252
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f254' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f254
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_walled_injective_load_bearing' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_walled_injective_load_bearing
+
+-- Tables `188` and `230` carry no sliding block code with an injective law, given the ends
+-- statement.
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f188' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f188
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f230' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f230
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_window_merges' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_window_merges
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.LocalRule.blockCode_eq_zero_of_window_merges_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.LocalRule.blockCode_eq_zero_of_window_merges_nonvacuous
+
+-- The ends statement at rule `188`, and tables `188` and `230` carrying no sliding block code with
+-- an injective law, with its witnesses.
+set_option linter.style.longLine false in
+/-- info: 'ECA.endsDetermine_f188' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.endsDetermine_f188
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f188'' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f188'
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f230'' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f230'
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f188_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f188_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_eq_zero_of_injective_law_f230_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_eq_zero_of_injective_law_f230_nonvacuous
+
+-- Table `206` fixing every reading of a conserved code under an injective law, with its witness.
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_finRule_eq_of_injective_law_f206' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_finRule_eq_of_injective_law_f206
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.law_apply_blockCode_eq_of_injective_law_f206' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.law_apply_blockCode_eq_of_injective_law_f206
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.blockCode_finRule_eq_of_injective_law_f206_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.blockCode_finRule_eq_of_injective_law_f206_nonvacuous

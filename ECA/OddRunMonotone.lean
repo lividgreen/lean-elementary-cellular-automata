@@ -250,11 +250,12 @@ theorem oddRunCountMono_f126 : OddRunCountMono f126 hq126 := by
 
 /-- The state with set cells exactly `S`. -/
 private noncomputable abbrev stateOfCells (S : Finset ℤ) : FiniteConfiguration :=
-  ∑ i ∈ S, Finsupp.single i (1 : ZMod 2)
+  Finsupp.indicator S fun _ _ => (1 : ZMod 2)
 
 private theorem stateOfCells_apply (S : Finset ℤ) (j : ℤ) :
     stateOfCells S j = if j ∈ S then 1 else 0 := by
-  simp [stateOfCells, Finsupp.finsetSum_apply, Finsupp.single_apply]
+  rw [Finsupp.indicator_apply]
+  simp
 
 /-- Closes the cell-by-cell description of a small state's boundary. -/
 local macro "cells_iff" : tactic =>

@@ -40,10 +40,16 @@ merge quotient is the eventual image (Leinster 2022, §6).
   semiconjugacy at every nonautonomous set.
 * `Nonautonomous.mergeMk_injective_of_injective` — at an injective `U`, `mergeMk U` is itself
   injective.
+* `Nonautonomous.merges_iff_eq_of_injective` / `Nonautonomous.mergeMk_bijective_of_injective` — at
+  an injective `U` two states merge only when equal, and `mergeMk U` is a bijection.
 * `Nonautonomous.Semiconj.merges_invariant` /
   `Nonautonomous.exists_mergeMk_injective` —
   **universality**: any semiconjugate factor map with an injective law is merge-invariant per
   fiber.
+* `Nonautonomous.Semiconj.eq_of_iterate_eq` /
+  `Nonautonomous.Semiconj.eq_of_iterate_eq_nonvacuous` — **the reduction**: with an injective law
+  the readings of a state and of its `p`-th iterate agree as soon as they agree after `k` further
+  steps.
 * `Nonautonomous.mergeFiber` / `Nonautonomous.positivelyInvariant_mergeFiber` /
   `Nonautonomous.mergeFiber_injOn` —
   **the merge classes represented in the fibers**: the quotient's own fibers, positively invariant
@@ -177,6 +183,24 @@ theorem mergeMk_injective_of_injective {U : X → X} (hU : Function.Injective U)
   obtain ⟨k, hk⟩ := Quotient.exact hss'
   exact hU.iterate k hk
 
+/-- **At an injective update two states merge only when equal**: `Merges U s s'` unwinds to
+`U^[k] s = U^[k] s'` for some `k`, and the iterate of an injective map is injective, so `s = s'`;
+the converse is reflexivity (`Merges.refl`). -/
+theorem merges_iff_eq_of_injective {U : X → X} (hU : Function.Injective U) {s s' : X} :
+    Merges U s s' ↔ s = s' := by
+  constructor
+  · rintro ⟨k, hk⟩
+    exact hU.iterate k hk
+  · rintro rfl
+    exact Merges.refl U s
+
+/-- **At an injective update the quotient map is a bijection**: with no two states merging, the
+merge quotient is the system itself read by a bijection. Injectivity is
+`mergeMk_injective_of_injective`, and surjectivity is that of a quotient map. -/
+theorem mergeMk_bijective_of_injective {U : X → X} (hU : Function.Injective U) :
+    Function.Bijective (mergeMk U) :=
+  ⟨mergeMk_injective_of_injective hU, Quotient.mk_surjective⟩
+
 /-- **The semiconjugacy, at every nonautonomous set, with no hypothesis**: the quotient map is a
 time-independent factor map that closes the semiconjugacy against `mergeLaw` identically
 ([RuleSpace] §2 Proposition 2.6(i)). -/
@@ -233,6 +257,38 @@ theorem Semiconj.merges_invariant {U : X → X} {F : M → M} {ℓ : ℕ → X �
   have h2 := Semiconj.iterate hadv hsq hs' k
   rw [hk, h2] at h1
   exact hF.iterate k h1.symm
+
+/-- **An injective law reduces an eventual equality of readings to an equality at the state**
+([RuleSpace] §2 Proposition 2.6(ii), the iterated semiconjugacy behind the merge invariance): if the
+readings of the `p`-th iterate and of the state itself agree after `k` further steps, they agree
+already, the iterates of an injective law being injective. -/
+theorem Semiconj.eq_of_iterate_eq {U : X → X} {F : M → M} {ℓ : ℕ → X → M} {Ω : ℕ → Set X}
+    (hF : Function.Injective F) (hadv : PositivelyInvariant U Ω)
+    (hsq : Semiconj U F ℓ Ω)
+    {t : ℕ} {s : X} (hs : s ∈ Ω t) (k p : ℕ)
+    (h : ℓ (t + p + k) (U^[k] (U^[p] s)) = ℓ (t + k) (U^[k] s)) :
+    ℓ (t + p) (U^[p] s) = ℓ t s := by
+  have hp : U^[p] s ∈ Ω (t + p) := mem_fiber_of_positivelyInvariant hadv hs p
+  have h1 := Semiconj.iterate hadv hsq hp k
+  have h2 := Semiconj.iterate hadv hsq hs k
+  rw [h1, h2] at h
+  exact hF.iterate k h
+
+/-- **The reduction's hypotheses hold together**, at the identity semiconjugacy on a two-point type:
+the law is injective, the fibers are positively invariant, the factor map closes the semiconjugacy,
+and the state lies in its fiber, with the readings equal at every exponent and every number of
+steps. -/
+theorem Semiconj.eq_of_iterate_eq_nonvacuous :
+    Function.Injective (id : Bool → Bool) ∧
+      PositivelyInvariant (id : Bool → Bool) (fun _ => (Set.univ : Set Bool)) ∧
+      Semiconj (id : Bool → Bool) (id : Bool → Bool) (fun _ x => x)
+        (fun _ => (Set.univ : Set Bool)) ∧
+      true ∈ (fun _ => (Set.univ : Set Bool)) 0 ∧
+      ∀ k p : ℕ, (fun (_ : ℕ) (x : Bool) => x) (0 + p + k) ((id : Bool → Bool)^[k]
+        ((id : Bool → Bool)^[p] true)) = (fun (_ : ℕ) (x : Bool) => x) (0 + k)
+        ((id : Bool → Bool)^[k] true) :=
+  ⟨Function.injective_id, fun _ _ _ => Set.mem_univ _, fun _ _ _ => rfl, Set.mem_univ _,
+    fun k p => by simp⟩
 
 /-- **The fiber at `t` of any semiconjugate factor map with an injective law injects into the merge
 classes over `Ω t`** ([RuleSpace] §2 Proposition 2.6(ii)): the merge quotient is the maximal such

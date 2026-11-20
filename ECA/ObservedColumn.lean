@@ -525,6 +525,17 @@ theorem observedColumn_f170_single :
 
 theorem hq90 : f90 0 0 0 = 0 := by decide
 
+/-- **At the rule of rule `90` two states merge only when equal**: the rule of `f90` is `rule90`
+(`finRule_apply` at the sum of the two neighbours), which is injective, so
+`Nonautonomous.merges_iff_eq_of_injective` applies. -/
+theorem merges_finRule_f90_iff_eq {s s' : FiniteConfiguration} :
+    Nonautonomous.Merges (finRule f90 hq90) s s' ↔ s = s' := by
+  have h : finRule f90 hq90 = rule90 := by
+    ext s i
+    rw [finRule_apply, rule90_apply, f90]
+  rw [h]
+  exact merges_rule90_iff_eq
+
 /-- Every iterate from the single seed is symmetric under `i ↦ -i`: `f90`'s rule sums the two
 neighbours and drops the center, and a seed that is itself symmetric keeps that symmetry through
 every step. -/
@@ -686,3 +697,8 @@ set_option linter.style.longLine false in
 /-- info: 'ECA.eventuallyPeriodic_observedRationalRay_of_diam_le_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms ECA.eventuallyPeriodic_observedRationalRay_of_diam_le_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'ECA.merges_finRule_f90_iff_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.merges_finRule_f90_iff_eq

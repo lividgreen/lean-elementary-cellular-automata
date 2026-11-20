@@ -30,6 +30,15 @@ set_option linter.style.longLine false in
 #guard_msgs (whitespace := lax) in
 #print axioms Nonautonomous.Semiconj.merges_invariant
 
+/-- info: 'Nonautonomous.Semiconj.eq_of_iterate_eq' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.Semiconj.eq_of_iterate_eq
+
+set_option linter.style.longLine false in
+/-- info: 'Nonautonomous.Semiconj.eq_of_iterate_eq_nonvacuous' depends on axioms: [propext] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.Semiconj.eq_of_iterate_eq_nonvacuous
+
 set_option linter.style.longLine false in
 /-- info: 'Nonautonomous.exists_mergeMk_injective' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
@@ -44,3 +53,12 @@ set_option linter.style.longLine false in
 /-- info: 'Nonautonomous.mergeFiber_injOn' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Nonautonomous.mergeFiber_injOn
+
+/-- info: 'Nonautonomous.merges_iff_eq_of_injective' does not depend on any axioms -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.merges_iff_eq_of_injective
+
+set_option linter.style.longLine false in
+/-- info: 'Nonautonomous.mergeMk_bijective_of_injective' depends on axioms: [propext, Classical.choice] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.mergeMk_bijective_of_injective

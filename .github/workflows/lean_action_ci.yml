@@ -159,6 +159,19 @@ jobs:
             done < <(find ".lake/build/doc/$r" -type f -name '*.html' -print0)
           done
           echo "pruned $pruned retired module page(s)"
+      # On ubuntu-26.04 (the image `ubuntu-latest` names since late October 2026) the
+      # docs step failed with `resource exhausted (error code: 12, not enough memory)` each
+      # time Lake started `git` (the `srcUri.github` jobs) or `lean`: the kernel's default
+      # heuristic overcommit (mode 0) refuses Lake's fork as one charge larger than RAM plus
+      # swap, while memory is in fact available and no OOM kill is recorded (diagnosed from
+      # the kernel log in eic/EpsilonEridani#216). Mode 1 skips that per-request check; real
+      # exhaustion would then end in an OOM kill instead of ENOMEM.
+      - name: Allow memory overcommit for the docs build
+        run: |
+          sudo sysctl -w vm.overcommit_memory=1
+          mode="$(cat /proc/sys/vm/overcommit_memory)"
+          echo "vm.overcommit_memory=$mode"
+          [ "$mode" = 1 ] || echo "::warning::vm.overcommit_memory is $mode, not 1; Lake may fail to start processes"
       - name: Build API docs
         timeout-minutes: 300
         run: ~/.elan/bin/lake build $(for r in $ROOTS; do printf '%s:docs ' "$r"; done)

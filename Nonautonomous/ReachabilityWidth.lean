@@ -67,6 +67,26 @@ one of which is a later version of another.
   factor map with an injective law whose own fiber image is antichain-shaped under its own law can
   still exceed the width — a two-line counterexample at the nested clock, reported rather
   than forced.
+* `width_imageFiber_le_of_fixed` / `encard_imageFiber_le_width_of_fixed` — **a factor map that
+  does not depend on the time creates no width**: when one map `ℓ₀` closes the semiconjugacy at
+  every time, the factor's width is at most the system's, with no hypothesis on the factor's law,
+  and with an injective law an antichain-shaped fiber image is bounded by the system's width.
+  Their joint-satisfiability witnesses are `width_imageFiber_le_of_fixed_nonvacuous` and
+  `encard_imageFiber_le_width_of_fixed_nonvacuous`.
+* `exists_fixed_factor_extent_gt_width_of_not_injective` — **guard**: at a law that is not
+  injective, a fiber image that is an antichain still exceeds the width, so the injectivity in the
+  second bound is load-bearing.
+* `elapsedRead` / `leadRead` with `semiconj_elapsedRead`, `semiconj_leadRead` and the four image
+  identities `imageFiber_elapsedRead_slow_clock`, `imageFiber_elapsedRead_slow_clock_encard`,
+  `imageFiber_leadRead_fast_clock`, `imageFiber_leadRead_fast_clock_encard` — the elapsed time at
+  the nested clock and the lead at the level-set clock, with their counts.
+* `halfElapsedRead` with `semiconj_halfElapsedRead`, `imageFiber_halfElapsedRead_slow_clock`,
+  `imageFiber_halfElapsedRead_slow_clock_encard` and `not_injOn_halfElapsedRead` — the elapsed time
+  halved, rounding down, at the nested clock: it closes the same square, takes `t / 2 + 1` values
+  at time `t`, and is not injective on the states admitted from time `1` on.
+* `exists_conservation_factor_extent_unbounded_width_one` — **an antichain image of unbounded size
+  at width one**: the elapsed time at the successor system has `t + 1` values at time `t`, under
+  the identity law, while the system's width is `1`.
 * `mergeFiber_nat_succ_fast_clock_encard` — **the guard family**: the fast counter's represented
   classes are in bijection with `Bool^t` at every time, while its width is `1` throughout, so the
   count of represented classes decides nothing.
@@ -77,7 +97,11 @@ one of which is a later version of another.
 most the width) is FALSE in general (`exists_conservation_factor_extent_gt_width`),
 and the raw count of represented classes decides neither direction (the clock and the
 guard family). Recovering the ceiling would need a hypothesis beyond "antichain-shaped under its
-own law" — not supplied here.
+own law": for a factor map that does not depend on the time the ceiling holds at an injective law
+(`encard_imageFiber_le_width_of_fixed`), but not at a law that is not injective
+(`exists_fixed_factor_extent_gt_width_of_not_injective`), and the elapsed time, which does depend
+on the time, has an antichain image of unbounded size at width one. Whether a ceiling holds for a
+dependence on the time more restricted than the general one is not claimed.
 
 `width`'s value is a property of the *presented* system `(X, U, Ω)`, not of `(X, U)` alone: a
 system presented by its own trajectory (singleton fibers) has width `1` whatever it is, since there
@@ -604,6 +628,326 @@ theorem width_eq_encard_of_isAntichain {U : X → X} {Ω : ℕ → Set X} {t : �
     exact Set.encard_mono hAsub
   · exact le_sSup ⟨mergeFiber U Ω t, ⟨Set.Subset.rfl, h⟩, rfl⟩
 
+/-! ## Antichains under the identity -/
+
+variable {M : Type*}
+
+/-- **Every subset is an antichain of the reachability of the identity**: the identity's iterates
+never leave a point, so two distinct points never reach one another. -/
+theorem isAntichain_iterate_id (A : Set M) :
+    IsAntichain (fun a b => ∃ j, (id : M → M)^[j] a = b) A := by
+  rintro a _ b _ hne ⟨j, hj⟩
+  exact hne (by simpa [Function.iterate_id] using hj)
+
+/-! ## A factor map that does not depend on the time creates no width -/
+
+/-- Along the orbit of a state of `Ω t`, a factor map that does not depend on the time reads the
+`k`-th iterate of the system as the `k`-th iterate of its law, and the orbit stays in the fibers. -/
+private theorem fixed_read_iterate {U : X → X} {F : M → M} {ℓ₀ : X → M} {Ω : ℕ → Set X}
+    (hadv : PositivelyInvariant U Ω) (hsq : Semiconj U F (fun _ => ℓ₀) Ω) {t : ℕ} {s : X}
+    (hs : s ∈ Ω t) (k : ℕ) : U^[k] s ∈ Ω (t + k) ∧ ℓ₀ (U^[k] s) = F^[k] (ℓ₀ s) := by
+  induction k with
+  | zero => exact ⟨by simpa using hs, by simp⟩
+  | succ k ih =>
+    obtain ⟨hmem, heq⟩ := ih
+    refine ⟨?_, ?_⟩
+    · rw [Function.iterate_succ_apply']
+      exact hadv (t + k) _ hmem
+    · rw [Function.iterate_succ_apply', Function.iterate_succ_apply', ← heq]
+      exact hsq (t + k) _ hmem
+
+/-- If the class of one state of `Ω t` reaches the class of another, then the class of its value
+under a time-independent factor map reaches the class of the other's value, in the factor's own
+merge quotient. -/
+private theorem reaches_of_reaches_fixed {U : X → X} {F : M → M} {ℓ₀ : X → M} {Ω : ℕ → Set X}
+    (hadv : PositivelyInvariant U Ω) (hsq : Semiconj U F (fun _ => ℓ₀) Ω) {t : ℕ} {s s' : X}
+    (hs : s ∈ Ω t) (hs' : s' ∈ Ω t) (h : Reaches U (mergeMk U s) (mergeMk U s')) :
+    Reaches F (mergeMk F (ℓ₀ s)) (mergeMk F (ℓ₀ s')) := by
+  obtain ⟨j, hj⟩ := h
+  rw [mergeLaw_iterate_mergeMk] at hj
+  obtain ⟨k, hk⟩ := Quotient.exact hj
+  refine ⟨j, ?_⟩
+  rw [mergeLaw_iterate_mergeMk]
+  refine Quotient.sound ⟨k, ?_⟩
+  have h1 := (fixed_read_iterate hadv hsq hs (k + j)).2
+  have h2 := (fixed_read_iterate hadv hsq hs' k).2
+  rw [Function.iterate_add_apply, hk] at h1
+  rw [← Function.iterate_add_apply, ← h1, h2]
+
+/-- **A factor map that does not depend on the time creates no width** ([RuleSpace] §2
+Definition 2.1 and Definition 2.2): at a system whose semiconjugacy to the law `F` is closed by one
+map `ℓ₀` at every time, the width of the factor's own fibers is at most the width of the system's.
+A largest antichain of classes in the factor's merge quotient is carried to an antichain of the
+system's classes of the same size, by choosing a state of the fiber for each class; no hypothesis
+on `F` enters, `Reaches` being a relation on the merge quotient. The ceiling's failure for a
+factor map that depends on the time (`exists_conservation_factor_extent_gt_width`) is therefore
+a failure of that dependence. -/
+theorem width_imageFiber_le_of_fixed {U : X → X} {F : M → M} {ℓ₀ : X → M} {Ω : ℕ → Set X}
+    (hadv : PositivelyInvariant U Ω) (hsq : Semiconj U F (fun _ => ℓ₀) Ω) (t : ℕ) :
+    width F (imageFiber (fun _ => ℓ₀) Ω) t ≤ width U Ω t := by
+  classical
+  apply sSup_le
+  rintro _ ⟨A, ⟨hAsub, hAanti⟩, rfl⟩
+  have hex : ∀ q : MergeQuot F, q ∈ A → ∃ s, s ∈ Ω t ∧ mergeMk F (ℓ₀ s) = q := by
+    intro q hq
+    obtain ⟨m, ⟨s, hs, rfl⟩, hmq⟩ := hAsub hq
+    exact ⟨s, hs, hmq⟩
+  rcases A.eq_empty_or_nonempty with rfl | ⟨q₀, hq₀⟩
+  · simp
+  obtain ⟨s₀, -⟩ := hex q₀ hq₀
+  have : Nonempty X := ⟨s₀⟩
+  choose! f hfmem hfeq using hex
+  have hreach : ∀ q ∈ A, ∀ q' ∈ A,
+      Reaches U (mergeMk U (f q)) (mergeMk U (f q')) → Reaches F q q' := by
+    intro q hq q' hq' h
+    have := reaches_of_reaches_fixed hadv hsq (hfmem q hq) (hfmem q' hq') h
+    rwa [hfeq q hq, hfeq q' hq'] at this
+  have hinj : Set.InjOn (fun q => mergeMk U (f q)) A := by
+    intro q hq q' hq' hqq
+    by_contra hne
+    exact hAanti hq hq' hne (hreach q hq q' hq' (by
+      have h' : mergeMk U (f q) = mergeMk U (f q') := hqq
+      rw [h']
+      exact Reaches.refl U _))
+  have hsub : (fun q => mergeMk U (f q)) '' A ⊆ mergeFiber U Ω t := by
+    rintro _ ⟨q, hq, rfl⟩
+    exact ⟨f q, hfmem q hq, rfl⟩
+  have hanti : IsAntichain (Reaches U) ((fun q => mergeMk U (f q)) '' A) := by
+    rintro _ ⟨q, hq, rfl⟩ _ ⟨q', hq', rfl⟩ hne h
+    exact hAanti hq hq' (fun hqq => hne (by rw [hqq])) (hreach q hq q' hq' h)
+  calc A.encard = ((fun q => mergeMk U (f q)) '' A).encard := hinj.encard_image.symm
+    _ ≤ width U Ω t := le_sSup ⟨_, ⟨hsub, hanti⟩, rfl⟩
+
+/-- **With an injective law, an antichain image is bounded by the width** ([RuleSpace] §2
+Definition 2.1 and Definition 2.2): when the factor map does not depend on the time, its law is
+injective and the fiber image is an antichain under the law's own iterates, the image has at most
+`width U Ω t` elements. Without injectivity the antichain hypothesis is not enough
+(`exists_fixed_factor_extent_gt_width_of_not_injective`). -/
+theorem encard_imageFiber_le_width_of_fixed {U : X → X} {F : M → M} {ℓ₀ : X → M}
+    {Ω : ℕ → Set X} (hF : Function.Injective F) (hadv : PositivelyInvariant U Ω)
+    (hsq : Semiconj U F (fun _ => ℓ₀) Ω) {t : ℕ}
+    (hanti : IsAntichain (fun a b => ∃ j, F^[j] a = b) (imageFiber (fun _ => ℓ₀) Ω t)) :
+    (imageFiber (fun _ => ℓ₀) Ω t).encard ≤ width U Ω t := by
+  have hmk := mergeMk_injective_of_injective hF
+  have hanti' : IsAntichain (Reaches F) (mergeFiber F (imageFiber (fun _ => ℓ₀) Ω) t) := by
+    rintro _ ⟨a, ha, rfl⟩ _ ⟨b, hb, rfl⟩ hne ⟨j, hj⟩
+    rw [mergeLaw_iterate_mergeMk] at hj
+    exact hanti ha hb (fun hab => hne (by rw [hab])) ⟨j, hmk hj⟩
+  calc (imageFiber (fun _ => ℓ₀) Ω t).encard
+      = (mergeFiber F (imageFiber (fun _ => ℓ₀) Ω) t).encard :=
+        (hmk.encard_image _).symm
+    _ = width F (imageFiber (fun _ => ℓ₀) Ω) t := (width_eq_encard_of_isAntichain hanti').symm
+    _ ≤ width U Ω t := width_imageFiber_le_of_fixed hadv hsq t
+
+/-- **The first bound at an instance** ([RuleSpace] §2 Definition 2.1): the successor system on the
+naturals, read by the identity into the same successor law, at the nested clock. Its hypotheses
+hold and both widths are `1`, so the bound compares two positive quantities. -/
+theorem width_imageFiber_le_of_fixed_nonvacuous :
+    ∃ (U F : ℕ → ℕ) (ℓ₀ : ℕ → ℕ) (Ω : ℕ → Set ℕ),
+      PositivelyInvariant U Ω ∧ Semiconj U F (fun _ => ℓ₀) Ω ∧
+      ∀ t, width F (imageFiber (fun _ => ℓ₀) Ω) t = 1 ∧ width U Ω t = 1 := by
+  refine ⟨Nat.succ, Nat.succ, id, fun t => Set.Iic t, ?_, fun t s _ => rfl, fun t => ⟨?_, ?_⟩⟩
+  · intro t s hs
+    exact Set.mem_Iic.mpr (Nat.succ_le_succ (Set.mem_Iic.mp hs))
+  · exact width_nat_succ_eq_one ⟨0, 0, Set.mem_Iic.mpr (Nat.zero_le t), rfl⟩
+  · exact width_nat_succ_eq_one ⟨0, Set.mem_Iic.mpr (Nat.zero_le t)⟩
+
+/-- **The second bound at an instance** ([RuleSpace] §2 Definition 2.1 and Definition 2.2): the
+identity on the naturals, read by itself, at a level set of two states. Its law is injective, its
+fiber image is the two-element antichain `{0, 1}` and the width is `2`, so the bound holds with
+equality. -/
+theorem encard_imageFiber_le_width_of_fixed_nonvacuous :
+    ∃ (U F : ℕ → ℕ) (ℓ₀ : ℕ → ℕ) (Ω : ℕ → Set ℕ),
+      Function.Injective F ∧ PositivelyInvariant U Ω ∧ Semiconj U F (fun _ => ℓ₀) Ω ∧
+      ∀ t, IsAntichain (fun a b => ∃ j, F^[j] a = b) (imageFiber (fun _ => ℓ₀) Ω t) ∧
+        (imageFiber (fun _ => ℓ₀) Ω t).encard = 2 ∧ width U Ω t = 2 := by
+  have himg : ∀ t, imageFiber (fun _ => (id : ℕ → ℕ)) (fun _ => ({0, 1} : Set ℕ)) t =
+      {0, 1} := fun t => Set.image_id _
+  refine ⟨id, id, id, fun _ => {0, 1}, Function.injective_id, fun t s hs => hs,
+    fun t s _ => rfl, fun t => ⟨?_, ?_, ?_⟩⟩
+  · exact isAntichain_iterate_id _
+  · rw [himg, Set.encard_pair (by decide)]
+  · have hanti : IsAntichain (Reaches (id : ℕ → ℕ))
+        (mergeFiber id (fun _ => ({0, 1} : Set ℕ)) t) := by
+      rintro _ ⟨a, -, rfl⟩ _ ⟨b, -, rfl⟩ hne ⟨j, hj⟩
+      rw [mergeLaw_iterate_mergeMk, Function.iterate_id] at hj
+      change mergeMk id (id a) = mergeMk id b at hj
+      have hab : id a = b := mergeMk_injective_of_injective Function.injective_id hj
+      exact hne (congrArg (mergeMk id) hab)
+    have hfib : mergeFiber id (fun _ => ({0, 1} : Set ℕ)) t = mergeMk id '' {0, 1} := rfl
+    rw [width_eq_encard_of_isAntichain hanti, hfib,
+      (mergeMk_injective_of_injective (U := (id : ℕ → ℕ)) Function.injective_id).encard_image,
+      Set.encard_pair (by decide)]
+
+/-- **Injectivity of the law is load-bearing in the second bound** ([RuleSpace] §2
+Definition 2.1 and Definition 2.2): the constant law `0` on three points, with the identity as the
+factor map, carries the fiber `{1, 2}` at time `0` and `{0}` after it. The two states of the fiber
+merge after one step, so the width at `0` is `1`, while their image is an antichain under the
+constant law of two elements. -/
+theorem exists_fixed_factor_extent_gt_width_of_not_injective :
+    ∃ (U F : Fin 3 → Fin 3) (ℓ₀ : Fin 3 → Fin 3) (Ω : ℕ → Set (Fin 3)),
+      PositivelyInvariant U Ω ∧ Semiconj U F (fun _ => ℓ₀) Ω ∧
+      IsAntichain (fun a b => ∃ j, F^[j] a = b) (imageFiber (fun _ => ℓ₀) Ω 0) ∧
+      width U Ω 0 < (imageFiber (fun _ => ℓ₀) Ω 0).encard := by
+  have himg : imageFiber (fun _ => (id : Fin 3 → Fin 3))
+      (fun t => if t = 0 then ({1, 2} : Set (Fin 3)) else {0}) 0 = {1, 2} := by
+    simp [imageFiber]
+  refine ⟨fun _ => 0, fun _ => 0, id, fun t => if t = 0 then {1, 2} else {0}, ?_, ?_, ?_, ?_⟩
+  · intro t s hs
+    simp
+  · intro t s _
+    rfl
+  · rw [himg]
+    rintro a ha b hb hne ⟨j, hj⟩
+    cases j with
+    | zero => exact hne hj
+    | succ n =>
+      rw [Function.iterate_succ_apply, Function.iterate_fixed rfl] at hj
+      subst hj
+      revert ha hb
+      simp
+  · rw [himg, Set.encard_pair (by decide)]
+    refine lt_of_le_of_lt (width_le_encard_mergeFiber _ _ 0) ?_
+    refine lt_of_le_of_lt (Set.encard_le_one_iff.mpr ?_) (by decide)
+    rintro _ _ ⟨a, ha, rfl⟩ ⟨b, hb, rfl⟩
+    refine Quotient.sound ⟨1, rfl⟩
+
+/-! ## The elapsed time at the successor system -/
+
+/-- **The elapsed time**: the number of steps since a state was admitted at the nested clock, read
+at time `t` from the state `s` with truncated subtraction. -/
+def elapsedRead (t s : ℕ) : ℕ := t - s
+
+/-- **The lead**: the number of steps by which the state `s` is ahead of the time `t`, read with
+truncated subtraction; the elapsed time's counterpart at the fast clock. -/
+def leadRead (t s : ℕ) : ℕ := s - t
+
+/-- **The elapsed time closes the semiconjugacy** ([RuleSpace] §2 Definition 2.1): at the successor
+system and at any nonautonomous set, one step reads one time later as the identity law applied to
+the elapsed time. -/
+theorem semiconj_elapsedRead (Ω : ℕ → Set ℕ) : Semiconj Nat.succ id elapsedRead Ω := by
+  intro t s _
+  simp [elapsedRead, Nat.succ_sub_succ]
+
+/-- **The lead closes the semiconjugacy** ([RuleSpace] §2 Definition 2.1): at the successor
+system and at any nonautonomous set, one step reads one time later as the identity law applied to
+the lead. -/
+theorem semiconj_leadRead (Ω : ℕ → Set ℕ) : Semiconj Nat.succ id leadRead Ω := by
+  intro t s _
+  simp [leadRead, Nat.succ_sub_succ]
+
+/-- **The elapsed time at the nested clock** ([RuleSpace] §2 Definition 2.1): at time `t` the
+states admitted are `0, …, t`, and their elapsed times are the same set. -/
+theorem imageFiber_elapsedRead_slow_clock (t : ℕ) :
+    imageFiber elapsedRead (fun t => Set.Iic t) t = Set.Iic t := by
+  ext m
+  constructor
+  · rintro ⟨s, -, rfl⟩
+    exact Set.mem_Iic.mpr (Nat.sub_le t s)
+  · intro hm
+    refine ⟨t - m, Set.mem_Iic.mpr (Nat.sub_le _ _), ?_⟩
+    have := Set.mem_Iic.mp hm
+    simp only [elapsedRead]
+    omega
+
+/-- **The elapsed time at the nested clock, counted**: `t + 1` values at time `t`, in additive
+form. -/
+theorem imageFiber_elapsedRead_slow_clock_encard (t : ℕ) :
+    (imageFiber elapsedRead (fun t => Set.Iic t) t).encard = t + 1 := by
+  rw [imageFiber_elapsedRead_slow_clock]
+  simp [Set.Finite.encard_eq_coe_toFinset_card (Set.finite_Iic t), Nat.card_Iic]
+
+/-- **The lead at the level-set clock** ([RuleSpace] §2 Definition 2.1): at time `t` the states
+admitted are those below `2 ^ t`, and their leads are the values `n` with `n + t < 2 ^ t`. -/
+theorem imageFiber_leadRead_fast_clock (t : ℕ) :
+    imageFiber leadRead (fun t => {n | n < 2 ^ t}) t = {n | n + t < 2 ^ t} := by
+  have ht : t < 2 ^ t := Nat.lt_two_pow_self
+  ext m
+  constructor
+  · rintro ⟨s, hs, rfl⟩
+    have hs' : s < 2 ^ t := hs
+    change leadRead t s + t < 2 ^ t
+    simp only [leadRead]
+    omega
+  · intro hm
+    have hm' : m + t < 2 ^ t := hm
+    refine ⟨m + t, hm', ?_⟩
+    simp [leadRead]
+
+/-- **The lead at the level-set clock, counted**: the number of values plus `t` is `2 ^ t`, in
+additive form, because subtraction in `ℕ∞` is truncated. -/
+theorem imageFiber_leadRead_fast_clock_encard (t : ℕ) :
+    (imageFiber leadRead (fun t => {n | n < 2 ^ t}) t).encard + t = 2 ^ t := by
+  have ht : t < 2 ^ t := Nat.lt_two_pow_self
+  have hset : {n | n + t < 2 ^ t} = Set.Iio (2 ^ t - t) := by
+    ext n
+    change n + t < 2 ^ t ↔ n < 2 ^ t - t
+    omega
+  rw [imageFiber_leadRead_fast_clock, hset, ← Finset.coe_range,
+    Set.encard_coe_eq_coe_finsetCard, Finset.card_range]
+  have h : 2 ^ t - t + t = 2 ^ t := by omega
+  exact_mod_cast h
+
+/-- **The halved elapsed time**: the number of steps since a state was admitted at the nested
+clock, read at time `t` from the state `s` with truncated subtraction and then halved, rounding
+down. -/
+def halfElapsedRead (t s : ℕ) : ℕ := (t - s) / 2
+
+/-- **The halved elapsed time closes the semiconjugacy** ([RuleSpace] §2 Definition 2.1): at the
+successor system and at any nonautonomous set, one step reads one time later as the identity law
+applied to the halved elapsed time. -/
+theorem semiconj_halfElapsedRead (Ω : ℕ → Set ℕ) : Semiconj Nat.succ id halfElapsedRead Ω := by
+  intro t s _
+  simp [halfElapsedRead, Nat.succ_sub_succ]
+
+/-- **The halved elapsed time at the nested clock** ([RuleSpace] §2 Definition 2.1): at time `t`
+the states admitted are `0, …, t`, and their halved elapsed times are `0, …, t / 2`. -/
+theorem imageFiber_halfElapsedRead_slow_clock (t : ℕ) :
+    imageFiber halfElapsedRead (fun t => Set.Iic t) t = Set.Iic (t / 2) := by
+  ext m
+  constructor
+  · rintro ⟨s, -, rfl⟩
+    exact Set.mem_Iic.mpr (Nat.div_le_div_right (Nat.sub_le t s))
+  · intro hm
+    have hm' : m ≤ t / 2 := Set.mem_Iic.mp hm
+    refine ⟨t - 2 * m, Set.mem_Iic.mpr (Nat.sub_le _ _), ?_⟩
+    simp only [halfElapsedRead]
+    omega
+
+/-- **The halved elapsed time at the nested clock, counted**: `t / 2 + 1` values at time `t`, in
+additive form. -/
+theorem imageFiber_halfElapsedRead_slow_clock_encard (t : ℕ) :
+    (imageFiber halfElapsedRead (fun t => Set.Iic t) t).encard = ((t / 2 + 1 : ℕ) : ℕ∞) := by
+  rw [imageFiber_halfElapsedRead_slow_clock]
+  simp [Set.Finite.encard_eq_coe_toFinset_card (Set.finite_Iic (t / 2)), Nat.card_Iic]
+
+/-- **The halved elapsed time forgets at the nested clock**: from time `1` on, the reading is not
+injective on the states admitted, the last two of which, `t` and `t - 1`, both read `0`. -/
+theorem not_injOn_halfElapsedRead {t : ℕ} (ht : 1 ≤ t) :
+    ¬ Set.InjOn (halfElapsedRead t) (Set.Iic t) := by
+  intro h
+  have h1 : t ∈ Set.Iic t := Set.mem_Iic.mpr le_rfl
+  have h2 : t - 1 ∈ Set.Iic t := Set.mem_Iic.mpr (Nat.sub_le _ _)
+  have heq : halfElapsedRead t t = halfElapsedRead t (t - 1) := by
+    simp only [halfElapsedRead]
+    omega
+  have := h h1 h2 heq
+  omega
+
+/-- **An antichain image of unbounded size at width one** ([RuleSpace] §2 Definition 2.1,
+Definition 2.2 and Proposition 2.7): the elapsed time at the successor system with its nested
+clock. Its law is the identity, so the image of the fiber at every time is an antichain, it has
+`t + 1` elements at time `t`, and the system's width is `1` throughout. -/
+theorem exists_conservation_factor_extent_unbounded_width_one :
+    ∃ (F : ℕ → ℕ) (ℓ : ℕ → ℕ → ℕ), Function.Injective F ∧
+      Semiconj Nat.succ F ℓ (fun t => Set.Iic t) ∧
+      ∀ t, IsAntichain (fun a b => ∃ j, F^[j] a = b) (imageFiber ℓ (fun t => Set.Iic t) t) ∧
+        (imageFiber ℓ (fun t => Set.Iic t) t).encard = t + 1 ∧
+        width Nat.succ (fun t => Set.Iic t) t = 1 :=
+  ⟨id, elapsedRead, Function.injective_id, semiconj_elapsedRead _,
+    fun t => ⟨isAntichain_iterate_id _, imageFiber_elapsedRead_slow_clock_encard t,
+      width_nat_succ_slow_clock t⟩⟩
+
 end Nonautonomous
 
 /-! ## Axiom audit
@@ -685,3 +1029,46 @@ set_option linter.style.longLine false in
 /-- info: 'Nonautonomous.exists_conservation_factor_extent_gt_width' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms Nonautonomous.exists_conservation_factor_extent_gt_width
+
+set_option linter.style.longLine false in
+/-- info: 'Nonautonomous.width_imageFiber_le_of_fixed' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.width_imageFiber_le_of_fixed
+
+set_option linter.style.longLine false in
+/-- info: 'Nonautonomous.width_imageFiber_le_of_fixed_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.width_imageFiber_le_of_fixed_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'Nonautonomous.encard_imageFiber_le_width_of_fixed' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.encard_imageFiber_le_width_of_fixed
+
+set_option linter.style.longLine false in
+/-- info: 'Nonautonomous.encard_imageFiber_le_width_of_fixed_nonvacuous' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.encard_imageFiber_le_width_of_fixed_nonvacuous
+
+set_option linter.style.longLine false in
+/-- info: 'Nonautonomous.exists_fixed_factor_extent_gt_width_of_not_injective' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.exists_fixed_factor_extent_gt_width_of_not_injective
+
+set_option linter.style.longLine false in
+/-- info: 'Nonautonomous.exists_conservation_factor_extent_unbounded_width_one' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.exists_conservation_factor_extent_unbounded_width_one
+
+/-- info: 'Nonautonomous.semiconj_halfElapsedRead' depends on axioms: [propext] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.semiconj_halfElapsedRead
+
+set_option linter.style.longLine false in
+/-- info: 'Nonautonomous.imageFiber_halfElapsedRead_slow_clock_encard' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.imageFiber_halfElapsedRead_slow_clock_encard
+
+/-- info: 'Nonautonomous.not_injOn_halfElapsedRead' depends on axioms: [propext, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms Nonautonomous.not_injOn_halfElapsedRead

@@ -201,6 +201,12 @@ theorem rule90_injective : Function.Injective rule90 := by
   have hz : rule90 (a - b) = 0 := by rw [rule90_sub, hab, sub_self]
   exact sub_eq_zero.mp (rule90_eq_zero_iff.mp hz)
 
+/-- **At rule `90` two states merge only when equal**: `rule90` is injective, so
+`Nonautonomous.merges_iff_eq_of_injective` applies, and the merge quotient of rule `90` is the
+rule itself read by a bijection (`Nonautonomous.mergeMk_bijective_of_injective`). -/
+theorem merges_rule90_iff_eq {s s' : FiniteConfiguration} : Merges rule90 s s' ↔ s = s' :=
+  merges_iff_eq_of_injective rule90_injective
+
 private theorem rule90_one_of_zero {s : FiniteConfiguration} {b : ℤ} (hb : rule90 s b ≠ 0) :
     s (b - 1) ≠ 0 ∨ s (b + 1) ≠ 0 := by
   rw [rule90_apply] at hb
@@ -1091,12 +1097,6 @@ private theorem windowMember_zero (a : ℤ) (w : ℕ) : windowMember a w 0 = 0 :
 private theorem card_window (w : ℕ) : (2 ^ w : ℕ∞) = ENat.card (Fin w → ZMod 2) := by
   rw [ENat.card_eq_coe_fintype_card, Fintype.card_fun]; simp [ZMod.card]
 
-/-- The equality version of `Function.Injective.encard_range` (this Mathlib pin's own is stated as
-`≤`, its proof's own middle step); reused at both windows below. -/
-private theorem encard_range_of_injective {α β : Type*} {f : α → β} (hf : Function.Injective f) :
-    (Set.range f).encard = ENat.card α := by
-  rw [← Set.image_univ, hf.encard_image, Set.encard_univ]
-
 private theorem regionStates_eq_range (n : ℕ) :
     regionStates n = Set.range (windowMember 0 n) := by
   apply Set.eq_of_subset_of_subset
@@ -1120,7 +1120,7 @@ private theorem regionStates_eq_range (n : ℕ) :
     exact (Finsupp.mem_support_iff.mp hi) hz
 
 private theorem card_regionStates (n : ℕ) : (regionStates n).encard = 2 ^ n := by
-  rw [regionStates_eq_range, encard_range_of_injective (windowMember_injective 0 n)]
+  rw [regionStates_eq_range, (windowMember_injective 0 n).encard_range]
   exact (card_window n).symm
 
 /-- **A window characterized by inequalities is a `windowMember` range**: the general form
@@ -1182,7 +1182,7 @@ private theorem card_interiorStates_of_hyps
     ⟨0, windowMember_zero (max a 0) (n - m)⟩
   have heq := Set.encard_sdiff_add_encard_of_subset (Set.singleton_subset_iff.mpr hzero_mem)
   rw [Set.encard_singleton] at heq
-  rw [encard_range_of_injective (windowMember_injective (max a 0) (n - m))] at heq
+  rw [(windowMember_injective (max a 0) (n - m)).encard_range] at heq
   rw [← card_window] at heq
   exact heq
 
@@ -2333,3 +2333,7 @@ set_option linter.style.longLine false in
 /-- info: 'ECA.rootSet_encard_add_rule240' depends on axioms: [propext, Classical.choice, Quot.sound] -/
 #guard_msgs (whitespace := lax) in
 #print axioms ECA.rootSet_encard_add_rule240
+
+/-- info: 'ECA.merges_rule90_iff_eq' depends on axioms: [propext, Classical.choice, Quot.sound] -/
+#guard_msgs (whitespace := lax) in
+#print axioms ECA.merges_rule90_iff_eq
